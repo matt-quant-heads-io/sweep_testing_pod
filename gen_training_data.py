@@ -597,7 +597,7 @@ def generate_training_data(domain):
             sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
 
 
-            goal_maps_set = [i for i in range(len(os.listdir(f"/home/ms12010/sweep_testing_pod/goal_maps/{domain}")))]
+            goal_maps_set = [i for i in range(len(os.listdir(f"/scratch/ms12010/sweep_testing_pod/goal_maps/{domain}")))]
 
             
             random.shuffle(goal_maps_set)
