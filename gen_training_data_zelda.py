@@ -723,7 +723,7 @@ def generate_training_data_zelda(domain, mode, username, debug):
         "combo_id": []
     }
 
-    root_dir = f"/scratch/{username}/sweep_testing_pod" # testing on matt's laptop:  f"/Users/matt/sweep_testing_pod"
+    root_dir = f"/scratch/{username}/overlay/sweep_testing_pod" # testing on matt's laptop:  f"/Users/matt/sweep_testing_pod"
     
     obs_sizes, goal_set_sizes, trajectory_lengths, training_dataset_sizes = [p[1] for p in DOMAIN_SPEC_VARS[domain]["sweep_params"]]
 

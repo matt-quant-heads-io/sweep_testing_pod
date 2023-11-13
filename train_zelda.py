@@ -12,7 +12,7 @@ from keras.utils import np_utils
 
 
 def train_zelda(domain, mode, username, debug):
-    root_path = f"/scratch/{username}/sweep_testing_pod/data/{domain}/{mode}" # For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/{domain}/{mode}"
+    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/{domain}/{mode}" # For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/{domain}/{mode}"
 
     sweep_schema_path = f"{root_path}/sweep_schema.csv" # For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/{domain}/{mode}/sweep_schema.csv"
     df_sweep_schema = pd.read_csv(sweep_schema_path)
