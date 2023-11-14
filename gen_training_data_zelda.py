@@ -693,7 +693,7 @@ def generate_training_data_zelda(domain, mode, username, debug):
     rng, seed = np_random(None)
     combo_id = 0
     sample_id = 0
-    goal_maps_dir = "/Users/matt/sweep_testing_pod/goal_maps" # TODO: f"/scratch/{username}/sweep_testing_pod/goal_maps/{domain}" 
+    goal_maps_dir = f"/scratch/{username}/sweep_testing_pod/goal_maps/{domain}" # "/Users/matt/sweep_testing_pod/goal_maps" # TODO:  
     sweep_param_obs_size = None
     sweep_param_goal_set_size = None
     sweep_param_trajectory_length = None
