@@ -1090,22 +1090,4 @@ def generate_training_data_zelda(combo_id, sweep_params, mode, username):
     df_map_start_and_goal_map_schema = pd.DataFrame(start_and_goal_shema_map)
     df_map_start_and_goal_map_schema.to_csv(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv", mode="a", index=False, header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv"))
 
-    
-
-
-
-# NEXT/REMAINING STEPS DATA GENERATION
-    # TODO: store goal_set_idxs in df (line 564)
-    # Finalize what data gets written and make sure the organization (i.e. dataframe schema is correct); check lucid chart app to confirm we're not missing anything 
-    #    (e.g. the starting map, the goal map, etc.)
-    # Remove the print statements
-    # Make the code controllable
-    # Add the lego PoD code (controllable)
-
-
-# NEXT/REMAINING STEPS TRAINING CODE
-
-
-# NEXT/REMAINING STEPS INFERENCE CODE
-
 

@@ -30,7 +30,7 @@ def main(cfg : DictConfig):
                 print(f"Removed {traj_path}")
 
         for combo_id, sweep_params in zip(cfg.experiments.combo_ids,params_combos_list):
-            inference_zelda(combo_id, sweep_params, cfg.domain, cfg.mode, cfg.username, debug)
+            inference_zelda(combo_id, sweep_params, cfg.mode, cfg.username)
 
         # TODO: inference_zelda here
     elif domain == "lr": 

@@ -328,6 +328,7 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
     agent = keras.models.load_model(
         model_abs_path,
     )
+    start_level_str = ""
 
     if mode == "controllable":
         average_enemies = 2
@@ -375,20 +376,13 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                                     "spider",
                                 ],
                         )
-                        level_str = ""
+                        start_level_str = ""
 
                         for row in start_map:
                             for col in row:
-                                level_str += REV_TILES_MAP[col]
+                                start_level_str += REV_TILES_MAP[col]
 
-                        results_dict["comboID"].append(combo_id)
-                        results_dict["sampleID"].append(sample_id)
-                        results_dict["model_num"].append(model_num)
-                        results_dict["start_map"].append(level_str)
-                        results_dict["target_enemies"].append(target_enemies)
-                        results_dict["target_nearest_enemy"].append(target_nearest_enemy)
-                        results_dict["target_path_length"].append(target_path_length)
-                        results_dict["chg_pct"].append(kwargs["change_percentage"])
+                        
 
                         
 
@@ -538,26 +532,19 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                                 level_str += REV_TILES_MAP[col]
 
                         results_dict["final_map"].append(level_str)
+                        results_dict["comboID"].append(combo_id)
+                        results_dict["sampleID"].append(sample_id)
+                        results_dict["model_num"].append(model_num)
+                        results_dict["start_map"].append(start_level_str)
+                        results_dict["target_enemies"].append(target_enemies)
+                        results_dict["target_nearest_enemy"].append(target_nearest_enemy)
+                        results_dict["target_path_length"].append(target_path_length)
+                        results_dict["chg_pct"].append(kwargs["change_percentage"])
 
                         dones = True
 
                     elif dones:
-                        final_map = info[0]["final_map"]
-                        level_str = ""
-
-                        for row in final_map:
-                            for col in row:
-                                level_str += REV_TILES_MAP[col]
-
-                        results_dict["final_map"].append(level_str)
-                        results_dict["result"].append("fail")
-                        enemies_input = map_stats["enemies"]
-                        nearest_enemy_input = map_stats["nearest-enemy"]
-                        path_length_input = map_stats["path-length"]
-
-                        results_dict["enemies_input"].append(enemies_input)
-                        results_dict["nearest_enemy_input"].append(nearest_enemy_input)
-                        results_dict["path_length_input"].append(path_length_input)
+                        pass
                         
                     
                 dones = False
@@ -594,13 +581,8 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                     for row in start_map:
                         for col in row:
-                            level_str += REV_TILES_MAP[col]
+                            start_level_str += REV_TILES_MAP[col]
 
-                    results_dict["comboID"].append(combo_id)
-                    results_dict["sampleID"].append(sample_id)
-                    results_dict["model_num"].append(model_num)
-                    results_dict["start_map"].append(level_str)
-                    results_dict["chg_pct"].append(kwargs["change_percentage"])
 
                     is_start_map = False
 
@@ -638,19 +620,15 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                             level_str += REV_TILES_MAP[col]
 
                     results_dict["final_map"].append(level_str)
+                    results_dict["comboID"].append(combo_id)
+                    results_dict["sampleID"].append(sample_id)
+                    results_dict["model_num"].append(model_num)
+                    results_dict["start_map"].append(start_level_str)
 
                     dones = True
 
                 elif dones:
-                    final_map = info[0]["final_map"]
-                    level_str = ""
-
-                    for row in final_map:
-                        for col in row:
-                            level_str += REV_TILES_MAP[col]
-
-                    results_dict["final_map"].append(level_str)
-                    results_dict["result"].append("fail")
+                    pass
                 
             dones = False
             obs = env.reset()
@@ -670,28 +648,21 @@ kwargs = {
 }
 
 
-def inference_zelda(domain, mode, username, debug):
-    root_path =f"/scratch/{username}/overlay/sweep_testing_pod/data/{domain}/{mode}" # For testing on matt's computer:  f"/Users/matt/sweep_testing_pod/data/{domain}/{mode}"
-    sweep_schema_path = f"{root_path}/sweep_schema.csv" #  For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/{domain}/{mode}/sweep_schema.csv"
+def inference_zelda(combo_id, sweep_params, mode, username):
+    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}" # For testing: 
+    sweep_schema_path = f"{root_path}/sweep_schema.csv" #  For testing: f"/Users/matt/sweep_testing_pod/data/zelda/{mode}/sweep_schema.csv"
 
-    df_sweep_schema = pd.read_csv(sweep_schema_path)
+    obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
+    root_path_prefix = f"{root_path}/comboID_{combo_id}"
+    for sample_id in range(1,6):
+        parent_path = f"{root_path_prefix}_sampleID_{sample_id}"
+        model_path = "{parent_path}/models/{model_count}.h5"
+        inference_results_path_str = "{}/inference_results.csv"
 
-    for index, row in df_sweep_schema.iterrows():
-        obs_size = row["sweep_param_obs_size"]
-        prefix_filename_of_model = row["prefix_filename_of_model"]
-        root_path = row["path_to_trajectories_dir_loc"].split("/trajectories")[0]
-        model_path = f'{root_path}/{row["prefix_filename_of_model"].split("model_")[0]}'
-        inference_results_path_str = "{}/inference_results_model_{}.csv"
-        combo_id = row["combo_id"]
-        sample_id = row["sample_id"]
-
-
-        print(f"obs_size: {obs_size}")
-
-        for model_count in range(1,4):
-            for chg_pct in range(1, 11, 1):
+        for model_count in range(1,2):
+            for chg_pct in range(1, 11):
                 kwargs["change_percentage"] = chg_pct / 10.0
-                model_abs_path = f"{model_path}/models/model_{model_count}.h5"
+                abs_model_path = model_path.format(parent_path=parent_path,model_count=model_count)
                 inference_results_path = inference_results_path_str.format(root_path, model_count)
-                infer(game, representation, model_abs_path, obs_size, model_count, mode, inference_results_path, combo_id, sample_id, **kwargs)
+                infer(game, representation, abs_model_path, obs_size, model_count, mode, inference_results_path, combo_id, sample_id, **kwargs)
 

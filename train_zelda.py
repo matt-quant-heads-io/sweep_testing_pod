@@ -21,7 +21,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
     trajectories_to_cleanup = []
     
     if mode == "non_controllable":
-        for sample_id in range(1,6):
+        for sample_id in range(1,2):
             parent_path = f"{root_path_prefix}_sampleID_{sample_id}"
             model_path = f"{parent_path}/models"
             trajectories_path = f"{parent_path}/trajectories"
@@ -79,7 +79,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
                 history = model.fit(X, y, epochs=250, steps_per_epoch=64, verbose=2, callbacks=[mcp_save, es])
     
     elif mode == "controllable":
-        for sample_id in range(1,6):
+        for sample_id in range(1,2):
             parent_path = f"{root_path_prefix}_sampleID_{sample_id}"
             model_path = f"{parent_path}/models"
             trajectories_path = f"{parent_path}/trajectories"
