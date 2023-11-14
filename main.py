@@ -1,4 +1,9 @@
 import argparse
+from itertools import product
+import os
+
+import hydra
+from omegaconf import DictConfig, OmegaConf
 
 from gen_training_data_zelda import generate_training_data_zelda
 from gen_training_data_lr import generate_training_data_lr
@@ -11,33 +16,34 @@ from train_zelda import train_zelda
 from inference_zelda import inference_zelda
 
 
-def main(domain, mode, username, debug):
-    if domain == "zelda": 
-        generate_training_data_zelda(domain, mode, username, debug)
-        train_zelda(domain, mode, username, debug)
-        inference_zelda(domain, mode, username, debug)
+
+@hydra.main(version_base=None, config_path="configs", config_name="config")
+def main(cfg : DictConfig):
+    params_combos_list = list(product(cfg.obs_sizes, cfg.experiments.goal_set_sizes, cfg.trajectory_lengths, cfg.training_dataset_sizes))
+
+    if cfg.domain == "zelda":
+        for combo_id, sweep_params in zip(cfg.experiments.combo_ids,params_combos_list):
+            generate_training_data_zelda(combo_id, sweep_params, cfg.mode, cfg.username)
+            trajectories_to_cleanup = train_zelda(combo_id, sweep_params, cfg.mode, cfg.username)
+            for traj_path in trajectories_to_cleanup:
+                os.remove(traj_path)
+                print(f"Removed {traj_path}")
+
+        for combo_id, sweep_params in zip(cfg.experiments.combo_ids,params_combos_list):
+            inference_zelda(combo_id, sweep_params, cfg.domain, cfg.mode, cfg.username, debug)
+
         # TODO: inference_zelda here
     elif domain == "lr": 
-        generate_training_data_lr(domain, mode)
+        # TODO: generate_training_data_lr(combo_id, sweep_params, cfg.mode, cfg.username)
         # TODO: train_lr here
         # TODO: inference_lr here
+        pass
     elif domain == "lego": 
-        generate_training_data_lego(domain, mode)
+        # TODO: generate_training_data_lego(domain, mode)
         # TODO: train_lego here
         # TODO: inference_lego here
-
-
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--domain", type=str, choices=["zelda", "lr", "lego"])
-    parser.add_argument("-m", "--mode", type=str, choices=["controllable", "non_controllable"])
-    parser.add_argument("-u", "--username", type=str, default="ms12010")
-    parser.add_argument("-l", "--debug", action='store_true')
-    
-    return parser.parse_args()
+        pass
 
 
 if __name__ == '__main__':
-    args = get_args()
-    main(args.domain, args.mode, args.username, args.debug)
+    main()

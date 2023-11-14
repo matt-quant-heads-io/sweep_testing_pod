@@ -551,7 +551,7 @@ def generate_training_data_lego(domain, mode, username):
         "prefix_filename_of_model": [],
     }
 
-    goal_maps_dir = f"/scratch/{username}/sweep_testing_pod/goal_maps/{domain}"
+    goal_maps_dir = f"/Users/matt/sweep_testing_pod/goal_maps/{domain}" #f"/scratch/{username}/sweep_testing_pod/goal_maps/{domain}"
 
     if mode == "non-controllable":
         for obs_size, goal_set_size, trajectory_length, training_dataset_size in product(obs_sizes, goal_set_sizes, trajectory_lengths, training_dataset_sizes):
@@ -559,12 +559,7 @@ def generate_training_data_lego(domain, mode, username):
             if not os.path.exists(root_data_dir):
                 os.makedirs(root_data_dir)
 
-            combo_id += 1
-            sweep_schema["combo_id"].append(sample_id)
-            sweep_schema["sweep_param_obs_size"].append(sample_id)
-            sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
-            sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
-            sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size)   
+            combo_id += 1   
 
             for sample_num in range(1,11):
                 sample_id += 1
@@ -585,6 +580,11 @@ def generate_training_data_lego(domain, mode, username):
                 sweep_schema["path_to_trajectories_dir_loc"].append(training_trajectory_filepath)
                 sweep_schema["sample_id"].append(sample_id)
                 sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
+                sweep_schema["combo_id"].append(combo_id)
+                sweep_schema["sweep_param_obs_size"].append(obs_size)
+                sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
+                sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
+                sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size)
 
 
                 goal_maps_set = [i for i in range(len(os.listdir(f"/scratch/ms12010/sweep_testing_pod/goal_maps/{domain}")))]
@@ -678,12 +678,7 @@ def generate_training_data_lego(domain, mode, username):
             if not os.path.exists(root_data_dir):
                 os.makedirs(root_data_dir)
 
-            combo_id += 1
-            sweep_schema["combo_id"].append(sample_id)
-            sweep_schema["sweep_param_obs_size"].append(sample_id)
-            sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
-            sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
-            sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size)   
+            combo_id += 1   
 
             for sample_num in range(1,11):
                 sample_id += 1
@@ -704,6 +699,11 @@ def generate_training_data_lego(domain, mode, username):
                 sweep_schema["path_to_trajectories_dir_loc"].append(training_trajectory_filepath)
                 sweep_schema["sample_id"].append(sample_id)
                 sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
+                sweep_schema["combo_id"].append(combo_id)
+                sweep_schema["sweep_param_obs_size"].append(obs_size)
+                sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
+                sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
+                sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size)
 
 
                 goal_maps_set = [i for i in range(len(os.listdir(f"/scratch/ms12010/sweep_testing_pod/goal_maps/{domain}")))]

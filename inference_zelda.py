@@ -656,7 +656,7 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
             obs = env.reset()
             obs = env.reset()
 
-        results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", index=False)
+        results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", header=not os.path.exists(inference_results_path), index=False)
 
 
 ################################## MAIN ########################################

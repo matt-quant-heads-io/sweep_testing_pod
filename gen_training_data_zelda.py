@@ -129,8 +129,7 @@ DOMAIN_SPEC_VARS = {
         "sweep_params": [
                 ("obs_sizes", [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31]),
                 ("goal_set_sizes", [2**0, 2**1, 2**2, 2**3, 2**4, 2**5, 2**6, 2**7, 2**8, 2**9]),
-                ("trajectory_lengths", [int(22 * 22*0.01), 
-                                    int(22 * 32*0.02),
+                ("trajectory_lengths", [int(22 * 32*0.02),
                                     int(22 * 32*0.05),
                                     int(22 * 32*0.1),
                                     int(22 * 32*0.2),
@@ -162,8 +161,7 @@ DOMAIN_SPEC_VARS = {
         "sweep_params": [
                         ("obs_sizes", [1, 2, 3, 4, 5, 6]),
                         ("goal_set_sizes", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]),
-                        ("trajectory_lengths", [int(6*6*6*0.01), 
-                                            int(6*6*6*0.02),
+                        ("trajectory_lengths", [int(6*6*6*0.02),
                                             int(6*6*6*0.05),
                                             int(6*6*6*0.1),
                                             int(6*6*6*0.2),
@@ -181,15 +179,15 @@ DOMAIN_SPEC_VARS = {
 }
 
 
-def generate_training_data_zelda(domain, mode, username, debug):
+def generate_training_data_zelda(combo_id, sweep_params, mode, username):
     # Reverse the k,v in TILES MAP for persisting back as char map .txt format
-    TILES_MAP = DOMAIN_SPEC_VARS[domain]["tiles_map"]
+    TILES_MAP = DOMAIN_SPEC_VARS["zelda"]["tiles_map"]
     REV_TILES_MAP = {v: k for k, v in TILES_MAP.items()}
-    INT_MAP = DOMAIN_SPEC_VARS[domain]["int_map"]
+    INT_MAP = DOMAIN_SPEC_VARS["zelda"]["int_map"]
     REV_INT_MAP = {v: k for k, v in INT_MAP.items()}
-    CHAR_MAP = DOMAIN_SPEC_VARS[domain]["int_map"]
+    CHAR_MAP = DOMAIN_SPEC_VARS["zelda"]["int_map"]
     actions_list = [act for act in list(TILES_MAP.values())]
-    prob = DOMAIN_SPEC_VARS[domain]["prob"]() if domain != 'lego' else None
+    prob = DOMAIN_SPEC_VARS["zelda"]["prob"]()
     rep = NarrowRepresentation()
     epsilon = 0.1
 
@@ -352,7 +350,7 @@ def generate_training_data_zelda(domain, mode, username, debug):
 
     def find_closest_goal_map(random_map, data_size, goal_set_idxs):
         smallest_hamming_dist = math.inf
-        filepath = DOMAIN_SPEC_VARS[domain]["goal_maps_filepath"]
+        filepath = DOMAIN_SPEC_VARS["zelda"]["goal_maps_filepath"]
         closest_map = curr_goal_map = int_arr_from_str_arr(
                 to_2d_array_level(filepath.format(goal_set_idxs[0]))
             )
@@ -404,7 +402,7 @@ def generate_training_data_zelda(domain, mode, username, debug):
 
     def get_char_map(arr_map, domain):
         str_arr_map = str_arr_from_int_arr(arr_map)
-        str_to_char_map = DOMAIN_SPEC_VARS[domain]["char_map"]
+        str_to_char_map = DOMAIN_SPEC_VARS["zelda"]["char_map"]
         char_map = ""
         for row in str_arr_map:
             for str_tile in row:
@@ -693,7 +691,8 @@ def generate_training_data_zelda(domain, mode, username, debug):
     rng, seed = np_random(None)
     combo_id = 0
     sample_id = 0
-    goal_maps_dir = f"/scratch/{username}/sweep_testing_pod/goal_maps/{domain}" # "/Users/matt/sweep_testing_pod/goal_maps" # TODO:  
+    goal_maps_dir = f"/scratch/{username}/sweep_testing_pod/goal_maps/zelda" # "/Users/matt/sweep_testing_pod/goal_maps" #
+    root_dir = f"/scratch/{username}/overlay/sweep_testing_pod" # f"/Users/matt/sweep_testing_pod" #
     sweep_param_obs_size = None
     sweep_param_goal_set_size = None
     sweep_param_trajectory_length = None
@@ -723,365 +722,314 @@ def generate_training_data_zelda(domain, mode, username, debug):
         "combo_id": []
     }
 
-    root_dir = f"/scratch/{username}/overlay/sweep_testing_pod" # testing on matt's laptop:  f"/Users/matt/sweep_testing_pod"
-    
-    obs_sizes, goal_set_sizes, trajectory_lengths, training_dataset_sizes = [p[1] for p in DOMAIN_SPEC_VARS[domain]["sweep_params"]]
-
+    print(f"sweep_params: {sweep_params}")
+    obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
     if mode == "non_controllable":
-        for obs_size, goal_set_size, trajectory_length, training_dataset_size in product(obs_sizes, goal_set_sizes, trajectory_lengths, training_dataset_sizes):
-            sweep_param_obs_size = obs_size
-            print(f"debug: {debug}")
-            if debug:
-                print(f"Generating samples for obs_size={obs_size} goal_set_size={goal_set_size} trajectory_length={trajectory_length} training_dataset_size={training_dataset_size}")
+        sweep_param_obs_size = obs_size
+        root_data_dir = f"{root_dir}/data/zelda/{mode}"
+        if not os.path.exists(root_data_dir):
+            os.makedirs(root_data_dir)
+
+
+        for sample_num in range(1,6):
+            sample_id += 1
             
-            root_data_dir = f"{root_dir}/data/{domain}/{mode}"
-            if not os.path.exists(root_data_dir):
-                os.makedirs(root_data_dir)
+            training_trajectory_filepath = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
+            
+            if not os.path.exists(training_trajectory_filepath):
+                os.makedirs(training_trajectory_filepath)
 
-            combo_id += 1
-  
+            training_trajectory_filepath =  f"{training_trajectory_filepath}/trajectories"
+            if not os.path.exists(training_trajectory_filepath):
+                os.makedirs(training_trajectory_filepath)
 
-            for sample_num in range(1,11):
-                sample_id += 1
+            trained_models_dir = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}/models"
+            if not os.path.exists(trained_models_dir):
+                os.makedirs(trained_models_dir)
 
-                if debug:
-                    print(f"SampleID: {sample_id}")
+            sweep_schema["path_to_trajectories_dir_loc"].append(training_trajectory_filepath)
+            sweep_schema["sample_id"].append(sample_id)
+            sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
+            sweep_schema["combo_id"].append(combo_id)
+            sweep_schema["sweep_param_obs_size"].append(sweep_param_obs_size)
+            sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
+            sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
+            sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size) 
+
+
+            goal_maps_set = [i for i in range(len(os.listdir(goal_maps_dir)))]
+
+            
+            random.shuffle(goal_maps_set)
+            goal_set_idxs = goal_maps_set[:goal_set_size]
+
+            # TODO: store goal_set_idxs in df
+            dict_len = (obs_size**2) * DOMAIN_SPEC_VARS["zelda"]["action_space_size"]
+            total_steps = 0
+            exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
+            exp_traj_dict["target"] = []
+            save_count = 0
+            while total_steps < training_dataset_size:
+                play_traces = []
+                cropped_wrapper = CroppedImagePCGRLWrapper(
+                    DOMAIN_SPEC_VARS["zelda"]["gym_env_name"],
+                    obs_size,
+                    **{
+                        "change_percentage": 1,
+                        "trials": 1,
+                        "verbose": True,
+                        "cropped_size": obs_size,
+                        "render": False,
+                    },
+                )
+                pcgrl_env = cropped_wrapper.pcgrl_env
+                start_map = gen_random_map(
+                    rng,
+                    DOMAIN_SPEC_VARS["zelda"]["env_x"],
+                    DOMAIN_SPEC_VARS["zelda"]["env_y"],
+                    DOMAIN_SPEC_VARS["zelda"]["action_pronbabilities_map"],
+                )
+                goal_map = find_closest_goal_map(start_map, goal_set_size, goal_set_idxs)
+                start_map_str = get_char_map(start_map, "zelda")
+                goal_map_str =  get_char_map(goal_map, "zelda")
+
+                start_and_goal_shema_map["random_start_map"].append(start_map_str)
+                start_and_goal_shema_map["goal_map"].append(goal_map_str)
+                start_and_goal_shema_map["sample_id"].append(sample_id)
+                start_and_goal_shema_map["combo_id"].append(combo_id)
+
                 
-                training_trajectory_filepath = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
-                
-                if not os.path.exists(training_trajectory_filepath):
-                    os.makedirs(training_trajectory_filepath)
+                # TODO: This is different between controllable/non-controllable
+                play_trace, temp_num_steps = generate_pod_greedy_tiles(
+                    pcgrl_env,
+                    start_map,
+                    goal_map,
+                    total_steps,
+                    training_dataset_size,
+                    trajectory_length,
+                    obs_size,
+                    render=False,
+                )
+                total_steps = temp_num_steps
+                play_traces.append(play_trace)
 
-                training_trajectory_filepath =  f"{training_trajectory_filepath}/trajectories"
-                if not os.path.exists(training_trajectory_filepath):
-                    os.makedirs(training_trajectory_filepath)
+                for p_i in play_trace:
+                    action = p_i[1][-1]
+                    exp_traj_dict["target"].append(action)
+                    pt = p_i[0]
+                    assert dict_len == len(
+                        pt
+                    ), f"len(pt) is {len(pt)} and dict_len is {dict_len}"
+                    for i in range(len(pt)):
+                        exp_traj_dict[f"col_{i}"].append(pt[i])
 
-                trained_models_dir = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}/models"
-                if not os.path.exists(trained_models_dir):
-                    os.makedirs(trained_models_dir)
-
-                sweep_schema["path_to_trajectories_dir_loc"].append(training_trajectory_filepath)
-                sweep_schema["sample_id"].append(sample_id)
-                sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
-                sweep_schema["combo_id"].append(combo_id)
-                sweep_schema["sweep_param_obs_size"].append(sweep_param_obs_size)
-                sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
-                sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
-                sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size) 
-
-
-                goal_maps_set = [i for i in range(len(os.listdir(goal_maps_dir)))]
-
-                
-                random.shuffle(goal_maps_set)
-                goal_set_idxs = goal_maps_set[:goal_set_size]
-
-                # TODO: store goal_set_idxs in df
-                dict_len = (obs_size**2) * DOMAIN_SPEC_VARS[domain]["action_space_size"]
-                total_steps = 0
-                exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
-                exp_traj_dict["target"] = []
-                save_count = 0
-                while total_steps < training_dataset_size:
-                    play_traces = []
-                    cropped_wrapper = CroppedImagePCGRLWrapper(
-                        DOMAIN_SPEC_VARS[domain]["gym_env_name"],
-                        obs_size,
-                        **{
-                            "change_percentage": 1,
-                            "trials": 1,
-                            "verbose": True,
-                            "cropped_size": obs_size,
-                            "render": False,
-                        },
-                    )
-                    pcgrl_env = cropped_wrapper.pcgrl_env
-                    start_map = gen_random_map(
-                        rng,
-                        DOMAIN_SPEC_VARS[domain]["env_x"],
-                        DOMAIN_SPEC_VARS[domain]["env_y"],
-                        DOMAIN_SPEC_VARS[domain]["action_pronbabilities_map"],
-                    )
-                    goal_map = find_closest_goal_map(start_map, goal_set_size, goal_set_idxs)
-                    start_map_str = get_char_map(start_map, domain)
-                    goal_map_str =  get_char_map(goal_map, domain)
-
-                    start_and_goal_shema_map["random_start_map"].append(start_map_str)
-                    start_and_goal_shema_map["goal_map"].append(goal_map_str)
-                    start_and_goal_shema_map["sample_id"].append(sample_id)
-                    start_and_goal_shema_map["combo_id"].append(combo_id)
-
-                    
-                    # TODO: This is different between controllable/non-controllable
-                    play_trace, temp_num_steps = generate_pod_greedy_tiles(
-                        pcgrl_env,
-                        start_map,
-                        goal_map,
-                        total_steps,
-                        training_dataset_size,
-                        trajectory_length,
-                        obs_size,
-                        render=False,
-                    )
-                    total_steps = temp_num_steps
-                    play_traces.append(play_trace)
-
-                    for p_i in play_trace:
-                        action = p_i[1][-1]
-                        exp_traj_dict["target"].append(action)
-                        pt = p_i[0]
-                        assert dict_len == len(
-                            pt
-                        ), f"len(pt) is {len(pt)} and dict_len is {dict_len}"
-                        for i in range(len(pt)):
-                            exp_traj_dict[f"col_{i}"].append(pt[i])
-
-                    if total_steps > 0 and total_steps % min(training_dataset_size, 100000) == 0:
-                        print(f"saving df at ts {total_steps}")
-                        df = pd.DataFrame(data=exp_traj_dict)
-                        df.to_csv(
-                            f"{training_trajectory_filepath}/{save_count}.csv",
-                            index=False,
-                        )
-                        save_count += 1
-
-                if debug:
-                    print(f"Total steps: {total_steps}")
-
-                if total_steps > 0 and total_steps % min(training_dataset_size, 100000) != 0:
+                if total_steps > 0 and total_steps % min(training_dataset_size, 100000) == 0:
                     print(f"saving df at ts {total_steps}")
                     df = pd.DataFrame(data=exp_traj_dict)
                     df.to_csv(
                         f"{training_trajectory_filepath}/{save_count}.csv",
-                        index=False,
+                        index=False, mode="a", header=not os.path.exists(f"{training_trajectory_filepath}/{save_count}.csv")
                     )
-                    exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
-                    exp_traj_dict["target"] = []
+                    save_count += 1
 
-                goal_maps_set = None
+            if total_steps > 0 and total_steps % min(training_dataset_size, 100000) != 0:
+                print(f"saving df at ts {total_steps}")
+                df = pd.DataFrame(data=exp_traj_dict)
+                df.to_csv(
+                    f"{training_trajectory_filepath}/{save_count}.csv",
+                    index=False,
+                    mode="a", header=not os.path.exists(f"{training_trajectory_filepath}/{save_count}.csv")
+                )
+                exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
+                exp_traj_dict["target"] = []
+
+            goal_maps_set = None
 
     elif mode == "controllable":
         goal_stats_set = {}
-        for obs_size, goal_set_size, trajectory_length, training_dataset_size in product(obs_sizes, goal_set_sizes, trajectory_lengths, training_dataset_sizes):
-            print(f"debug: {debug}")
-            sweep_param_obs_size = obs_size
-            if debug:
-                print(f"Generating samples for obs_size={obs_size} goal_set_size={goal_set_size} trajectory_length={trajectory_length} training_dataset_size={training_dataset_size}")
+        
+        sweep_param_obs_size = obs_size
+        
+        root_data_dir = f"{root_dir}/data/zelda/{mode}"
+        if not os.path.exists(root_data_dir):
+            os.makedirs(root_data_dir)
             
-            root_data_dir = f"{root_dir}/data/{domain}/{mode}"
-            if not os.path.exists(root_data_dir):
-                os.makedirs(root_data_dir)
 
-            combo_id += 1
-             
+        for sample_num in range(1,6):
+            sample_id += 1
 
-            for sample_num in range(1,2): #range(1,11):
-                sample_id += 1
+            goal_stats_set[f"{combo_id}_{sample_id}"] = []
+            training_trajectory_filepath = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
+            
+            if not os.path.exists(training_trajectory_filepath):
+                os.makedirs(training_trajectory_filepath)
 
-                if debug:
-                    print(f"SampleID: {sample_id}")
+            training_trajectory_filepath =  f"{training_trajectory_filepath}/trajectories"
+            if not os.path.exists(training_trajectory_filepath):
+                os.makedirs(training_trajectory_filepath)
 
-                goal_stats_set[f"{combo_id}_{sample_id}"] = []
-                training_trajectory_filepath = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
+            trained_models_dir = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}/models"
+            if not os.path.exists(trained_models_dir):
+                os.makedirs(trained_models_dir)
+
+            goal_stats_map_root_path = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
+            
+            sweep_schema["path_to_trajectories_dir_loc"].append(training_trajectory_filepath)
+            sweep_schema["sample_id"].append(sample_id)
+            sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
+            sweep_schema["combo_id"].append(combo_id)
+            sweep_schema["sweep_param_obs_size"].append(sweep_param_obs_size)
+            sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
+            sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
+            sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size)  
+
+
+            goal_maps_set = [i for i in range(len(os.listdir(goal_maps_dir)))]
+
+            
+            random.shuffle(goal_maps_set)
+            goal_set_idxs = goal_maps_set[:goal_set_size]
+
+            # TODO: store goal_set_idxs in df
+            dict_len = (obs_size**2) * DOMAIN_SPEC_VARS["zelda"]["action_space_size"]
+            total_steps = 0
+            exp_traj_dict = OrderedDict()
+            exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
+
+            # TODO: Modify according to LR, Lego
+            exp_traj_dict["actual_num_regions"] = []
+            exp_traj_dict["actual_num_enemies"] = []
+            exp_traj_dict["actual_nearest_enemy"] = []
+            exp_traj_dict["actual_path_length"] = []
+
+            exp_traj_dict["num_regions_targets"] = []
+            exp_traj_dict["num_enemies_targets"] = []
+            exp_traj_dict["nearest_enemy_targets"] = []
+            exp_traj_dict["path_length_targets"] = []
+
+            exp_traj_dict["num_regions_signed"] = []
+            exp_traj_dict["num_enemies_signed"] = []
+            exp_traj_dict["nearest_enemy_signed"] = []
+            exp_traj_dict["path_length_signed"] = []
+
+            exp_traj_dict["target"] = []
+            save_count = 0
+            while total_steps < training_dataset_size:
+                play_traces = []
+                cropped_wrapper = CroppedImagePCGRLWrapper(
+                    DOMAIN_SPEC_VARS["zelda"]["gym_env_name"],
+                    obs_size,
+                    **{
+                        "change_percentage": 1,
+                        "trials": 1,
+                        "verbose": True,
+                        "cropped_size": obs_size,
+                        "render": False,
+                    },
+                )
+                pcgrl_env = cropped_wrapper.pcgrl_env
+                start_map = gen_random_map(
+                    rng,
+                    DOMAIN_SPEC_VARS["zelda"]["env_x"],
+                    DOMAIN_SPEC_VARS["zelda"]["env_y"],
+                    DOMAIN_SPEC_VARS["zelda"]["action_pronbabilities_map"],
+                )
+                goal_map = find_closest_goal_map(start_map, goal_set_size, goal_set_idxs)
+                map_stats = get_stats(
+                    get_string_map(
+                        np.array(goal_map),
+                        [
+                            "empty",
+                            "solid",
+                            "player",
+                            "key",
+                            "door",
+                            "bat",
+                            "scorpion",
+                            "spider",
+                        ],
+                    ),
+                    11,
+                    7,
+                    ["empty", "solid", "player", "key", "door", "bat", "scorpion", "spider"],
+                )
+                start_map_str = get_char_map(start_map, "zelda")
+                goal_map_str =  get_char_map(goal_map, "zelda")
+
+                start_and_goal_shema_map["random_start_map"].append(start_map_str)
+                start_and_goal_shema_map["goal_map"].append(goal_map_str)
+                start_and_goal_shema_map["sample_id"].append(sample_id)
+                start_and_goal_shema_map["combo_id"].append(combo_id)
+
                 
-                if not os.path.exists(training_trajectory_filepath):
-                    os.makedirs(training_trajectory_filepath)
+                (
+                    play_trace,
+                    temp_num_steps,
+                    map_stat,
+                    actual_stats,
+                    controllable_diffs,
+                ) = generate_controllable_pod_greedy(
+                    pcgrl_env,
+                    start_map,
+                    goal_map,
+                    total_steps,
+                    ep_len=trajectory_length,
+                    crop_size=obs_size,
+                    render=False,
+                )
+                total_steps = temp_num_steps
 
-                training_trajectory_filepath =  f"{training_trajectory_filepath}/trajectories"
-                if not os.path.exists(training_trajectory_filepath):
-                    os.makedirs(training_trajectory_filepath)
-
-                trained_models_dir = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}/models"
-                if not os.path.exists(trained_models_dir):
-                    os.makedirs(trained_models_dir)
-
-                goal_stats_map_root_path = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
-                
-                sweep_schema["path_to_trajectories_dir_loc"].append(training_trajectory_filepath)
-                sweep_schema["sample_id"].append(sample_id)
-                sweep_schema["prefix_filename_of_model"].append(f"model_comboID_{combo_id}_sampleID_{sample_id}_")
-                sweep_schema["combo_id"].append(combo_id)
-                sweep_schema["sweep_param_obs_size"].append(sweep_param_obs_size)
-                sweep_schema["sweep_param_goal_set_size"].append(goal_set_size)
-                sweep_schema["sweep_param_trajectory_length"].append(trajectory_length)
-                sweep_schema["sweep_param_training_dataset_size"].append(training_dataset_size)  
-
-
-                goal_maps_set = [i for i in range(len(os.listdir(goal_maps_dir)))]
-
-                
-                random.shuffle(goal_maps_set)
-                goal_set_idxs = goal_maps_set[:goal_set_size]
-
-                # TODO: store goal_set_idxs in df
-                dict_len = (obs_size**2) * DOMAIN_SPEC_VARS[domain]["action_space_size"]
-                total_steps = 0
-                exp_traj_dict = OrderedDict()
-                exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
-
-                # TODO: Modify according to LR, Lego
-                exp_traj_dict["actual_num_regions"] = []
-                exp_traj_dict["actual_num_enemies"] = []
-                exp_traj_dict["actual_nearest_enemy"] = []
-                exp_traj_dict["actual_path_length"] = []
-
-                exp_traj_dict["num_regions_targets"] = []
-                exp_traj_dict["num_enemies_targets"] = []
-                exp_traj_dict["nearest_enemy_targets"] = []
-                exp_traj_dict["path_length_targets"] = []
-
-                exp_traj_dict["num_regions_signed"] = []
-                exp_traj_dict["num_enemies_signed"] = []
-                exp_traj_dict["nearest_enemy_signed"] = []
-                exp_traj_dict["path_length_signed"] = []
-
-                exp_traj_dict["target"] = []
-                save_count = 0
-                while total_steps < training_dataset_size:
-                    play_traces = []
-                    cropped_wrapper = CroppedImagePCGRLWrapper(
-                        DOMAIN_SPEC_VARS[domain]["gym_env_name"],
-                        obs_size,
-                        **{
-                            "change_percentage": 1,
-                            "trials": 1,
-                            "verbose": True,
-                            "cropped_size": obs_size,
-                            "render": False,
-                        },
-                    )
-                    pcgrl_env = cropped_wrapper.pcgrl_env
-                    start_map = gen_random_map(
-                        rng,
-                        DOMAIN_SPEC_VARS[domain]["env_x"],
-                        DOMAIN_SPEC_VARS[domain]["env_y"],
-                        DOMAIN_SPEC_VARS[domain]["action_pronbabilities_map"],
-                    )
-                    goal_map = find_closest_goal_map(start_map, goal_set_size, goal_set_idxs)
-                    map_stats = get_stats(
-                        get_string_map(
-                            np.array(goal_map),
-                            [
-                                "empty",
-                                "solid",
-                                "player",
-                                "key",
-                                "door",
-                                "bat",
-                                "scorpion",
-                                "spider",
-                            ],
-                        ),
-                        11,
-                        7,
-                        ["empty", "solid", "player", "key", "door", "bat", "scorpion", "spider"],
-                    )
-                    start_map_str = get_char_map(start_map, domain)
-                    goal_map_str =  get_char_map(goal_map, domain)
-
-                    start_and_goal_shema_map["random_start_map"].append(start_map_str)
-                    start_and_goal_shema_map["goal_map"].append(goal_map_str)
-                    start_and_goal_shema_map["sample_id"].append(sample_id)
-                    start_and_goal_shema_map["combo_id"].append(combo_id)
-
-                    
+                play_traces.append(play_trace)
+                goal_stats_set[f"{combo_id}_{sample_id}"].append(
                     (
-                        play_trace,
-                        temp_num_steps,
-                        map_stat,
-                        actual_stats,
-                        controllable_diffs,
-                    ) = generate_controllable_pod_greedy(
-                        pcgrl_env,
-                        start_map,
-                        goal_map,
-                        total_steps,
-                        ep_len=trajectory_length,
-                        crop_size=obs_size,
-                        render=False,
+                        map_stats["regions"],
+                        map_stats["enemies"],
+                        map_stats["nearest-enemy"],
+                        map_stats["path-length"],
                     )
-                    total_steps = temp_num_steps
+                )
 
-                    play_traces.append(play_trace)
-                    goal_stats_set[f"{combo_id}_{sample_id}"].append(
-                        (
-                            map_stats["regions"],
-                            map_stats["enemies"],
-                            map_stats["nearest-enemy"],
-                            map_stats["path-length"],
-                        )
-                    )
+                for i, p_i in enumerate(play_trace):
+                    action = p_i[-1][-1]
 
-                    for i, p_i in enumerate(play_trace):
-                        action = p_i[-1][-1]
+                    # Map characteristics here
+                    num_regions = map_stats["regions"]
+                    num_enemies = map_stats["enemies"]
+                    nearest_enemy = map_stats["nearest-enemy"]
+                    path_length = map_stats["path-length"]
 
-                        # Map characteristics here
-                        num_regions = map_stats["regions"]
-                        num_enemies = map_stats["enemies"]
-                        nearest_enemy = map_stats["nearest-enemy"]
-                        path_length = map_stats["path-length"]
+                    exp_traj_dict["num_regions_targets"].append(num_regions)
+                    exp_traj_dict["num_enemies_targets"].append(num_enemies)
+                    exp_traj_dict["nearest_enemy_targets"].append(nearest_enemy)
+                    exp_traj_dict["path_length_targets"].append(path_length)
 
-                        exp_traj_dict["num_regions_targets"].append(num_regions)
-                        exp_traj_dict["num_enemies_targets"].append(num_enemies)
-                        exp_traj_dict["nearest_enemy_targets"].append(nearest_enemy)
-                        exp_traj_dict["path_length_targets"].append(path_length)
+                    exp_traj_dict["num_regions_signed"].append(controllable_diffs[i][0])
+                    exp_traj_dict["num_enemies_signed"].append(controllable_diffs[i][1])
+                    exp_traj_dict["nearest_enemy_signed"].append(controllable_diffs[i][2])
+                    exp_traj_dict["path_length_signed"].append(controllable_diffs[i][3])
 
-                        exp_traj_dict["num_regions_signed"].append(controllable_diffs[i][0])
-                        exp_traj_dict["num_enemies_signed"].append(controllable_diffs[i][1])
-                        exp_traj_dict["nearest_enemy_signed"].append(controllable_diffs[i][2])
-                        exp_traj_dict["path_length_signed"].append(controllable_diffs[i][3])
-
-                        exp_traj_dict["actual_num_regions"].append(actual_stats[i][0])
-                        exp_traj_dict["actual_num_enemies"].append(actual_stats[i][1])
-                        exp_traj_dict["actual_nearest_enemy"].append(actual_stats[i][2])
-                        exp_traj_dict["actual_path_length"].append(actual_stats[i][3])
-                        exp_traj_dict["target"].append(action)
-                        
-                        pt = p_i[0]
-                        assert dict_len == len(
-                            pt
-                        ), f"len(pt) is {len(pt)} and dict_len is {dict_len}"
-                        for i in range(len(pt)):
-                            exp_traj_dict[f"col_{i}"].append(pt[i])
-
-                    if total_steps > 0 and total_steps % min(training_dataset_size, 100000) == 0:
-                        print(f"saving df at ts {total_steps}")
-                        cols_to_keep = [f"col_{i}" for i in range(dict_len)] + ["num_regions_signed", "num_enemies_signed", "nearest_enemy_signed", "path_length_signed", "target"]
-                        df = pd.DataFrame(data=exp_traj_dict)
-                        df[cols_to_keep].to_csv(
-                            f"{training_trajectory_filepath}/{save_count}.csv",
-                            index=False,
-                        )
-
-                        exp_traj_dict = OrderedDict()
-                        exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
-                        exp_traj_dict["num_regions_targets"] = []
-                        exp_traj_dict["num_enemies_targets"] = []
-                        exp_traj_dict["nearest_enemy_targets"] = []
-                        exp_traj_dict["path_length_targets"] = []
-
-                        exp_traj_dict["actual_num_regions"] = []
-                        exp_traj_dict["actual_num_enemies"] = []
-                        exp_traj_dict["actual_nearest_enemy"] = []
-                        exp_traj_dict["actual_path_length"] = []
-
-                        exp_traj_dict["num_regions_signed"] = []
-                        exp_traj_dict["num_enemies_signed"] = []
-                        exp_traj_dict["nearest_enemy_signed"] = []
-                        exp_traj_dict["path_length_signed"] = []
+                    exp_traj_dict["actual_num_regions"].append(actual_stats[i][0])
+                    exp_traj_dict["actual_num_enemies"].append(actual_stats[i][1])
+                    exp_traj_dict["actual_nearest_enemy"].append(actual_stats[i][2])
+                    exp_traj_dict["actual_path_length"].append(actual_stats[i][3])
+                    exp_traj_dict["target"].append(action)
                     
+                    pt = p_i[0]
+                    assert dict_len == len(
+                        pt
+                    ), f"len(pt) is {len(pt)} and dict_len is {dict_len}"
+                    for i in range(len(pt)):
+                        exp_traj_dict[f"col_{i}"].append(pt[i])
 
-                        exp_traj_dict["target"] = []
-                        save_count += 1
-
-                if total_steps > 0 and total_steps % min(training_dataset_size, 100000) != 0:
+                if total_steps > 0 and total_steps % min(training_dataset_size, 100000) == 0:
                     print(f"saving df at ts {total_steps}")
                     cols_to_keep = [f"col_{i}" for i in range(dict_len)] + ["num_regions_signed", "num_enemies_signed", "nearest_enemy_signed", "path_length_signed", "target"]
                     df = pd.DataFrame(data=exp_traj_dict)
                     df[cols_to_keep].to_csv(
-                                f"{training_trajectory_filepath}/{save_count}.csv",
-                                index=False,
-                            )
+                        f"{training_trajectory_filepath}/{save_count}.csv",
+                        index=False, mode="a", header=not os.path.exists(f"{training_trajectory_filepath}/{save_count}.csv")
+                    )
+
                     exp_traj_dict = OrderedDict()
                     exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
                     exp_traj_dict["num_regions_targets"] = []
@@ -1098,19 +1046,49 @@ def generate_training_data_zelda(domain, mode, username, debug):
                     exp_traj_dict["num_enemies_signed"] = []
                     exp_traj_dict["nearest_enemy_signed"] = []
                     exp_traj_dict["path_length_signed"] = []
+                
 
                     exp_traj_dict["target"] = []
+                    save_count += 1
 
-                goal_maps_set = None
+            if total_steps > 0 and total_steps % min(training_dataset_size, 100000) != 0:
+                print(f"saving df at ts {total_steps}")
+                cols_to_keep = [f"col_{i}" for i in range(dict_len)] + ["num_regions_signed", "num_enemies_signed", "nearest_enemy_signed", "path_length_signed", "target"]
+                df = pd.DataFrame(data=exp_traj_dict)
+                df[cols_to_keep].to_csv(
+                            f"{training_trajectory_filepath}/{save_count}.csv",
+                            index=False,
+                            mode="a", header=not os.path.exists(f"{training_trajectory_filepath}/{save_count}.csv")
+                        )
+                exp_traj_dict = OrderedDict()
+                exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
+                exp_traj_dict["num_regions_targets"] = []
+                exp_traj_dict["num_enemies_targets"] = []
+                exp_traj_dict["nearest_enemy_targets"] = []
+                exp_traj_dict["path_length_targets"] = []
 
-            df_goal_stats = pd.DataFrame(goal_stats_set[f"{combo_id}_{sample_id}"])
-            df_goal_stats.to_csv(f"{goal_stats_map_root_path}/goal_stats_COMBO_ID_{combo_id}_SAMPLE_ID_{sample_id}.csv", index=False)
+                exp_traj_dict["actual_num_regions"] = []
+                exp_traj_dict["actual_num_enemies"] = []
+                exp_traj_dict["actual_nearest_enemy"] = []
+                exp_traj_dict["actual_path_length"] = []
+
+                exp_traj_dict["num_regions_signed"] = []
+                exp_traj_dict["num_enemies_signed"] = []
+                exp_traj_dict["nearest_enemy_signed"] = []
+                exp_traj_dict["path_length_signed"] = []
+
+                exp_traj_dict["target"] = []
+
+            goal_maps_set = None
+
+        df_goal_stats = pd.DataFrame(goal_stats_set[f"{combo_id}_{sample_id}"])
+        df_goal_stats.to_csv(f"{goal_stats_map_root_path}/goal_stats_COMBO_ID_{combo_id}_SAMPLE_ID_{sample_id}.csv", mode="a", header=not os.path.exists(f"{goal_stats_map_root_path}/goal_stats_COMBO_ID_{combo_id}_SAMPLE_ID_{sample_id}.csv"), index=False)
 
     df_sweep_schema = pd.DataFrame(sweep_schema)
-    df_sweep_schema.to_csv(f"{root_dir}/data/{domain}/{mode}/sweep_schema.csv", index=False)
+    df_sweep_schema.to_csv(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv", mode="a", header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv"), index=False)
 
     df_map_start_and_goal_map_schema = pd.DataFrame(start_and_goal_shema_map)
-    df_map_start_and_goal_map_schema.to_csv(f"{root_dir}/data/{domain}/{mode}/start_and_goal_shema_map.csv", index=False)
+    df_map_start_and_goal_map_schema.to_csv(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv", mode="a", index=False, header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv"))
 
     
 
