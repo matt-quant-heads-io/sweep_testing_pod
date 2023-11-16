@@ -551,7 +551,7 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                 obs = env.reset()
                 obs = env.reset()
 
-        results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", index=False)
+        results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", header=not os.path.exists(inference_results_path), index=False)
 
     elif mode == "non_controllable":
         results_dict = {"chg_pct":[], "start_map":[], "final_map":[], "result":[], "comboID":[], "sampleID":[], "model_num": []}
@@ -649,21 +649,26 @@ kwargs = {
 
 
 def inference_zelda(combo_id, sweep_params, mode, username):
-    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode[0]}" # For testing: 
-    sweep_schema_path = f"{root_path}/sweep_schema.csv" #  For testing: f"/Users/matt/sweep_testing_pod/data/zelda/{mode}/sweep_schema.csv"
+    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}" # For testing: 
+    obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
 
-    for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
-        obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
-        root_path_prefix = f"{root_path}/comboID_{combo_id}"
-        for sample_id in range(1,6):
-            parent_path = f"{root_path_prefix}_sampleID_{sample_id}"
-            model_path = "{parent_path}/models/{model_count}.h5"
-            inference_results_path_str = "{}/inference_results.csv"
+    combo_id_path = f"{root_path}/comboID_{combo_id}"
+    
+    for sample_id in range(1, 4):
+        sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
+        model_count = sample_id
+        model_path = f"{sample_id_path}/models/{model_count}.h5"
+        inference_results_path = f"{sample_id_path}/inference_results.csv"
 
-            for model_count in range(1,2):
-                for chg_pct in range(1, 11):
-                    kwargs["change_percentage"] = chg_pct / 10.0
-                    abs_model_path = model_path.format(parent_path=parent_path,model_count=model_count)
-                    inference_results_path = inference_results_path_str.format(root_path, model_count)
-                    infer(game, representation, abs_model_path, obs_size, model_count, mode, inference_results_path, combo_id, sample_id, **kwargs)
+        if os.path.isfile(f"{sample_id_path}/results.done"):
+            continue
+
+        for model_count in range(1,4):
+            for chg_pct in range(1, 11):
+                kwargs["change_percentage"] = chg_pct / 10.0
+                infer(game, representation, model_path, obs_size, model_count, mode, inference_results_path, combo_id, sample_id, **kwargs)
+
+            with open(f"{sample_id_path}/results.done", "w") as f:
+                f.write("")
+
 

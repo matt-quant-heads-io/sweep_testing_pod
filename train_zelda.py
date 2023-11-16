@@ -21,182 +21,186 @@ def train_zelda(combo_ids, sweep_params, mode, username):
     trajectories_to_cleanup = []
     
     if mode == "non_controllable":
-        for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
-            for sample_id in range(1,2):
-                parent_path = f"{root_path}/comboID_{combo_id}_sampleID_{sample_id}"
-                model_path = f"{parent_path}/models"
-                if os.path.isfile(f"{model_path}/1.h5"):
-                    continue 
+        for sample_id in range(1,4):
+            combo_id_path = f"{root_path}/comboID_{combo_id}
+            sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
+            if os.path.exists(f"{sample_id_path}/training.done"):
+                continue
 
-                trajectories_path = f"{parent_path}/trajectories"
-                trajectories_to_cleanup.append(trajectories_path)
-                
-                for model_count in range(1,4):
+            model_path = f"{sample_id_path}/models"
+            trajectories_path = f"{sample_id_path}/trajectories"
 
-                    dfs = []
-                    X = []
-                    y = []
+            dfs = []
+            X = []
+            y = []
 
-                    for file in os.listdir(trajectories_path):
-                        print(f"compiling df {file}")
-                        df = pd.read_csv(f"{trajectories_path}/{file}")[:1000]
-                        dfs.append(df)
+            for file in os.listdir(trajectories_path):
+                print(f"compiling df {file}")
+                df = pd.read_csv(f"{trajectories_path}/{file}")[:1000]
+                dfs.append(df)
 
-                    df = pd.concat(dfs)
+            df = pd.concat(dfs)
 
-                    # df = df.sample(frac=1).reset_index(drop=True)
-                    y_true = df[['target']]
-                    y = np_utils.to_categorical(y_true)
-                    print(f"y: {y}")
-                    df.drop('target', axis=1, inplace=True)
-                    y = y.astype('int32')
+            # df = df.sample(frac=1).reset_index(drop=True)
+            y_true = df[['target']]
+            y = np_utils.to_categorical(y_true)
+            print(f"y: {y}")
+            df.drop('target', axis=1, inplace=True)
+            y = y.astype('int32')
 
-                    for idx in range(len(df)):
-                        x = df.iloc[idx, :].values.astype('float32').reshape((obs_size, obs_size, 8))
-                        X.append(x)
+            for idx in range(len(df)):
+                x = df.iloc[idx, :].values.astype('float32').reshape((obs_size, obs_size, 8))
+                X.append(x)
 
-                    X = np.array(X)
+            X = np.array(X)
 
-                    model_abs_path = f"{model_path}/{model_count}.h5"
+            model_abs_path = f"{model_path}/{model_count}.h5"
 
-                    model = tf.keras.models.Sequential([
-                        tf.keras.layers.Conv2D(128, (3, 3), activation='relu', input_shape=(obs_size, obs_size, 8), padding="SAME"),
-                        tf.keras.layers.MaxPooling2D(2, 2),
-                        tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding="SAME"),
-                        tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding="SAME"),
-                        tf.keras.layers.Flatten(),
-                        tf.keras.layers.Dense(8, activation='softmax')
-                    ])
+            model = tf.keras.models.Sequential([
+                tf.keras.layers.Conv2D(128, (3, 3), activation='relu', input_shape=(obs_size, obs_size, 8), padding="SAME"),
+                tf.keras.layers.MaxPooling2D(2, 2),
+                tf.keras.layers.Conv2D(128, (3, 3), activation='relu', padding="SAME"),
+                tf.keras.layers.Conv2D(256, (3, 3), activation='relu', padding="SAME"),
+                tf.keras.layers.Flatten(),
+                tf.keras.layers.Dense(8, activation='softmax')
+            ])
 
-                    model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=[tf.keras.metrics.CategoricalAccuracy()])
-                    mcp_save = ModelCheckpoint(model_abs_path, save_best_only=True, monitor='categorical_accuracy', mode='max')
-                    es = EarlyStopping(
-                        monitor='categorical_accuracy',
-                        min_delta=0,
-                        patience=50,
-                        verbose=0,
-                        mode='max',
-                        baseline=0.999,
-                        restore_best_weights=False,
-                        start_from_epoch=0
-                    )
-                    history = model.fit(X, y, epochs=250, steps_per_epoch=64, verbose=2, callbacks=[mcp_save, es])
+            model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=[tf.keras.metrics.CategoricalAccuracy()])
+            mcp_save = ModelCheckpoint(model_abs_path, save_best_only=True, monitor='categorical_accuracy', mode='max')
+            es = EarlyStopping(
+                monitor='categorical_accuracy',
+                min_delta=0,
+                patience=50,
+                verbose=0,
+                mode='max',
+                baseline=0.999,
+                restore_best_weights=False,
+                start_from_epoch=0
+            )
+            history = model.fit(X, y, epochs=250, steps_per_epoch=64, verbose=2, callbacks=[mcp_save, es])
+
+            with open(f"{sample_id_path}/training.done", "w") as f:
+                f.writelines(history)
+
+            trajectories_to_cleanup.append(trajectories_path)
     
     elif mode == "controllable":
-        for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
-            for sample_id in range(1,2):
-                parent_path = f"{root_path}/comboID_{combo_id}_sampleID_{sample_id}"
-                model_path = f"{parent_path}/models"
-                if os.path.isfile(f"{model_path}/1.h5"):
-                    continue 
-                trajectories_path = f"{parent_path}/trajectories"
+        for sample_id in range(1,4):
+            combo_id_path = f"{root_path}/comboID_{combo_id}
+            sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
+            if os.path.exists(f"{sample_id_path}/training.done"):
+                continue
 
-                trajectories_to_cleanup.append(trajectories_path)
+            model_path = f"{sample_id_path}/models"
+            trajectories_path = f"{sample_id_path}/trajectories"
 
-                for model_count in range(1,4):
+            dfs = []
+            X = []
+            y = []
 
-                    dfs = []
-                    X = []
-                    y = []
+            for file in os.listdir(trajectories_path):
+                print(f"compiling df {file}")
+                df = pd.read_csv(f"{trajectories_path}/{file}")
+                dfs.append(df)
 
-                    for file in os.listdir(trajectories_path):
-                        print(f"compiling df {file}")
-                        df = pd.read_csv(f"{trajectories_path}/{file}")
-                        dfs.append(df)
+            df = pd.concat(dfs)
 
-                    df = pd.concat(dfs)
-
-                    df = df.sample(frac=1).reset_index(drop=True)
-                    y_true = df[['target']]
-                    y = np_utils.to_categorical(y_true)
-                    df.drop('target', axis=1, inplace=True)
-                    y = y.astype('int32')
+            df = df.sample(frac=1).reset_index(drop=True)
+            y_true = df[['target']]
+            y = np_utils.to_categorical(y_true)
+            df.drop('target', axis=1, inplace=True)
+            y = y.astype('int32')
 
 
-                    num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]]-1)
-                    nearest_enemy_signed = np_utils.to_categorical(df[["nearest_enemy_signed"]]-1)
-                    path_length_signed = np_utils.to_categorical(df[["path_length_signed"]]-1)
+            num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]]-1)
+            nearest_enemy_signed = np_utils.to_categorical(df[["nearest_enemy_signed"]]-1)
+            path_length_signed = np_utils.to_categorical(df[["path_length_signed"]]-1)
 
-                    signed_inputs = np.column_stack((num_enemies_signed, num_enemies_signed, num_enemies_signed))
+            signed_inputs = np.column_stack((num_enemies_signed, num_enemies_signed, num_enemies_signed))
 
-                    df.drop("num_regions_signed", axis=1, inplace=True)
-                    df.drop("num_enemies_signed", axis=1, inplace=True)
-                    df.drop("nearest_enemy_signed", axis=1, inplace=True)
-                    df.drop("path_length_signed", axis=1, inplace=True)
+            df.drop("num_regions_signed", axis=1, inplace=True)
+            df.drop("num_enemies_signed", axis=1, inplace=True)
+            df.drop("nearest_enemy_signed", axis=1, inplace=True)
+            df.drop("path_length_signed", axis=1, inplace=True)
 
-                    for idx in range(len(df)):
-                        x = df.iloc[idx, :].values.astype('int32').reshape((obs_size, obs_size, 8))
-                        X.append(x)
+            for idx in range(len(df)):
+                x = df.iloc[idx, :].values.astype('int32').reshape((obs_size, obs_size, 8))
+                X.append(x)
 
-                    X = np.array(X)
+            X = np.array(X)
 
-                    model_abs_path = f"{model_path}/{model_count}.h5"
-                    inputs = [
-                        Input(shape=(obs_size, obs_size, 8), name="obs"),
-                        Input(shape=(signed_inputs.shape[1],), name="signed_inputs"),
-                    ]
+            model_abs_path = f"{model_path}/{model_count}.h5"
+            inputs = [
+                Input(shape=(obs_size, obs_size, 8), name="obs"),
+                Input(shape=(signed_inputs.shape[1],), name="signed_inputs"),
+            ]
 
-                    x = Conv2D(
-                        128,
-                        (3, 3),
-                        activation="relu",
-                        input_shape=(obs_size, obs_size, 8),
-                        padding="SAME",
-                    )(inputs[0])
-                    x = MaxPooling2D(2, 2)(x)
-                    x = Conv2D(128, (3, 3), activation="relu", padding="SAME")(x)
-                    x = Conv2D(256, (3, 3), activation="relu", padding="SAME")(x)
-                    x = Flatten()(x)
-                    x = Concatenate()([x] + inputs[1:])
-                    x = Dense(128)(x)
+            x = Conv2D(
+                128,
+                (3, 3),
+                activation="relu",
+                input_shape=(obs_size, obs_size, 8),
+                padding="SAME",
+            )(inputs[0])
+            x = MaxPooling2D(2, 2)(x)
+            x = Conv2D(128, (3, 3), activation="relu", padding="SAME")(x)
+            x = Conv2D(256, (3, 3), activation="relu", padding="SAME")(x)
+            x = Flatten()(x)
+            x = Concatenate()([x] + inputs[1:])
+            x = Dense(128)(x)
 
-                    final_output = [
-                        Dense(8, activation="softmax")(x),
-                    ]
+            final_output = [
+                Dense(8, activation="softmax")(x),
+            ]
 
-                    conditional_counting_cnn_model = Model(
-                        inputs=inputs, outputs=final_output, name="cnn_cond_counting_model"
-                    )
-                    conditional_counting_cnn_model.summary()
+            conditional_counting_cnn_model = Model(
+                inputs=inputs, outputs=final_output, name="cnn_cond_counting_model"
+            )
+            conditional_counting_cnn_model.summary()
 
-                    conditional_counting_cnn_model.compile(
-                        loss=[
-                            tf.keras.losses.CategoricalCrossentropy(name="cnn_cond_counting_model_loss")
-                        ],
-                        optimizer=SGD(),
-                        metrics=[
-                            tf.keras.metrics.CategoricalAccuracy(name="cnn_cond_counting_model_acc")
-                        ],
-                    )
+            conditional_counting_cnn_model.compile(
+                loss=[
+                    tf.keras.losses.CategoricalCrossentropy(name="cnn_cond_counting_model_loss")
+                ],
+                optimizer=SGD(),
+                metrics=[
+                    tf.keras.metrics.CategoricalAccuracy(name="cnn_cond_counting_model_acc")
+                ],
+            )
 
-                    counting_mcp_save = ModelCheckpoint(
-                        model_abs_path,
-                        save_best_only=True,
-                        monitor="cnn_cond_counting_model_acc",
-                        mode="max",
-                    )
-                    es = EarlyStopping(
-                        monitor='categorical_accuracy',
-                        min_delta=0,
-                        patience=50,
-                        verbose=0,
-                        mode='max',
-                        baseline=0.999,
-                        restore_best_weights=False,
-                        start_from_epoch=0
-                    )
+            counting_mcp_save = ModelCheckpoint(
+                model_abs_path,
+                save_best_only=True,
+                monitor="cnn_cond_counting_model_acc",
+                mode="max",
+            )
+            es = EarlyStopping(
+                monitor='categorical_accuracy',
+                min_delta=0,
+                patience=50,
+                verbose=0,
+                mode='max',
+                baseline=0.999,
+                restore_best_weights=False,
+                start_from_epoch=0
+            )
 
-                    counting_history = conditional_counting_cnn_model.fit(
-                        [
-                            X,
-                            signed_inputs
-                        ],
-                        y,
-                        epochs=250,
-                        steps_per_epoch=64,
-                        verbose=2,
-                        callbacks=[counting_mcp_save, es],
-                    )
+            counting_history = conditional_counting_cnn_model.fit(
+                [
+                    X,
+                    signed_inputs
+                ],
+                y,
+                epochs=250,
+                steps_per_epoch=64,
+                verbose=2,
+                callbacks=[counting_mcp_save, es],
+            )
+
+            with open(f"{sample_id_path}/training.done", "w") as f:
+                f.writelines(counting_history)
+
+            trajectories_to_cleanup.append(trajectories_path)
 
     return trajectories_to_cleanup
 
