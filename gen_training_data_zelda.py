@@ -858,7 +858,6 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
                 f.write("")
     
     elif mode == "controllable":
-        goal_stats_set = {}
         sweep_param_obs_size = obs_size
         
         combo_id_path = f"{root_data_dir}/comboID_{combo_id}"
@@ -986,15 +985,6 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
                 total_steps = temp_num_steps
 
                 play_traces.append(play_trace)
-                goal_stats_set[f"{combo_id}_{sample_id}"].append(
-                    (
-                        map_stats["regions"],
-                        map_stats["enemies"],
-                        map_stats["nearest-enemy"],
-                        map_stats["path-length"],
-                    )
-                )
-
                 for i, p_i in enumerate(play_trace):
                     action = p_i[-1][-1]
 
@@ -1086,9 +1076,6 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
                 exp_traj_dict["target"] = []
 
             goal_maps_set = None
-
-            df_goal_stats = pd.DataFrame(goal_stats_set[f"{combo_id}_{sample_id}"])
-            df_goal_stats.to_csv(f"{sample_id_path}/goal_stats.csv", mode="a", header=not os.path.exists(f"{sample_id_path}/goal_stats.csv"), index=False)
 
             df_sweep_schema = pd.DataFrame(sweep_schema)
             df_sweep_schema.to_csv(f"{sample_id_path}/sweep_schema.csv", mode="a", header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv"), index=False)
