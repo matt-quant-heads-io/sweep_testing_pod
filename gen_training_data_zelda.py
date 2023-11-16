@@ -179,7 +179,7 @@ DOMAIN_SPEC_VARS = {
 }
 
 
-def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
+def generate_training_data_zelda(combo_id, sweep_params, mode, username):
     # Reverse the k,v in TILES MAP for persisting back as char map .txt format
     TILES_MAP = DOMAIN_SPEC_VARS["zelda"]["tiles_map"]
     REV_TILES_MAP = {v: k for k, v in TILES_MAP.items()}
@@ -689,8 +689,6 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
 
 
     rng, seed = np_random(None)
-    combo_id = 0
-    sample_id = 0
     goal_maps_dir = f"/scratch/{username}/overlay/sweep_testing_pod/goal_maps/zelda" # "/Users/matt/sweep_testing_pod/goal_maps" #
     root_dir = f"/scratch/{username}/overlay/sweep_testing_pod" # f"/Users/matt/sweep_testing_pod" #
     root_data_dir = f"{root_dir}/data/zelda/{mode}"
@@ -713,7 +711,6 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
         "sweep_param_training_dataset_size": [],
         "path_to_models_and_trajectories": []
     }
-
 
     start_and_goal_shema_map = {
         "random_start_map": [],
@@ -800,7 +797,6 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
                 start_and_goal_shema_map["goal_map"].append(goal_map_str)
                 start_and_goal_shema_map["sample_id"].append(sample_id)
                 start_and_goal_shema_map["combo_id"].append(combo_id)
-
                 
                 # TODO: This is different between controllable/non-controllable
                 play_trace, temp_num_steps = generate_pod_greedy_tiles(
