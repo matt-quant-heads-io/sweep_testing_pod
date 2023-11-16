@@ -19,15 +19,15 @@ from inference_zelda import inference_zelda
 
 def main(combo_id, sweep_params, domain, mode, username):
     if domain == "zelda":
-        # for combo_id, sweep_params in combo_ids_params_combos:
-        generate_training_data_zelda(combo_id, sweep_params, mode, username)
-        trajectories_to_cleanup = train_zelda(combo_id, sweep_params, mode, username)
-        for traj_path in trajectories_to_cleanup:
-            os.remove(traj_path)
-            print(f"Removed {traj_path}")
+        for combo_id, sweep_params in combo_ids_params_combos:
+            generate_training_data_zelda([combo_id], [sweep_params], mode, username)
+            trajectories_to_cleanup = train_zelda([combo_id], [sweep_params], mode, username)
+            for traj_path in trajectories_to_cleanup:
+                os.remove(traj_path)
+                print(f"Removed {traj_path}")
 
-        # for combo_id, sweep_params in combo_ids_params_combos:
-        inference_zelda(combo_id, sweep_params, mode, username)
+        for combo_id, sweep_params in combo_ids_params_combos:
+            inference_zelda(combo_id, sweep_params, mode, username)
 
         # TODO: inference_zelda here
     elif domain == "lr":

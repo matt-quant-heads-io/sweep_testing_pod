@@ -728,6 +728,7 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
 
     print(f"sweep_params: {sweep_params}")
     generated_new_data = False
+    domain = "zelda"
     
     if mode == "non_controllable":
         for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
