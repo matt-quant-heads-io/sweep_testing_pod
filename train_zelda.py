@@ -22,7 +22,7 @@ def train_zelda(combo_ids, sweep_params, mode, username):
     
     if mode == "non_controllable":
         for sample_id in range(1,4):
-            combo_id_path = f"{root_path}/comboID_{combo_id}
+            combo_id_path = f"{root_path}/comboID_{combo_id}"
             sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
             if os.path.exists(f"{sample_id_path}/training.done"):
                 continue
@@ -86,7 +86,7 @@ def train_zelda(combo_ids, sweep_params, mode, username):
     
     elif mode == "controllable":
         for sample_id in range(1,4):
-            combo_id_path = f"{root_path}/comboID_{combo_id}
+            combo_id_path = f"{root_path}/comboID_{combo_id}"
             sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
             if os.path.exists(f"{sample_id_path}/training.done"):
                 continue

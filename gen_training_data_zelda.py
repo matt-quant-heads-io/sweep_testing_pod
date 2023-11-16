@@ -732,7 +732,7 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
     if mode == "non_controllable":
         sweep_param_obs_size = obs_size
         combo_id_path = f"{root_data_dir}/comboID_{combo_id}"
-        if not os.path.exsits(combo_id_path):
+        if not os.path.exists(combo_id_path):
             os.makedirs(combo_id_path)
     
         for sample_id in range(1,4):
@@ -862,7 +862,7 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
         sweep_param_obs_size = obs_size
         
         combo_id_path = f"{root_data_dir}/comboID_{combo_id}"
-        if not os.path.exsits(combo_id_path):
+        if not os.path.exists(combo_id_path):
             os.makedirs(combo_id_path)
     
         for sample_id in range(1,4):
