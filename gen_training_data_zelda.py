@@ -691,8 +691,12 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
     rng, seed = np_random(None)
     combo_id = 0
     sample_id = 0
-    goal_maps_dir = f"/scratch/{username}/sweep_testing_pod/goal_maps/zelda" # "/Users/matt/sweep_testing_pod/goal_maps" #
+    goal_maps_dir = f"/scratch/{username}/overlay/sweep_testing_pod/goal_maps/zelda" # "/Users/matt/sweep_testing_pod/goal_maps" #
     root_dir = f"/scratch/{username}/overlay/sweep_testing_pod" # f"/Users/matt/sweep_testing_pod" #
+    root_data_dir = f"{root_dir}/data/zelda/{mode}"
+    if not os.path.exists(root_data_dir):
+        os.makedirs(root_data_dir)
+
     sweep_param_obs_size = None
     sweep_param_goal_set_size = None
     sweep_param_trajectory_length = None
@@ -723,19 +727,21 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
     }
 
     print(f"sweep_params: {sweep_params}")
+    generated_new_data = False
     
     if mode == "non_controllable":
         for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
             sweep_param_obs_size = obs_size
-            root_data_dir = f"{root_dir}/data/zelda/{mode}"
-            if not os.path.exists(root_data_dir):
-                os.makedirs(root_data_dir)
+            
 
 
-            for sample_num in range(1,6):
-                sample_id += 1
+            for sample_id in range(1,6):
                 
                 training_trajectory_filepath = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
+                if os.path.isfile(f"{training_trajectory_filepath}/trajectories/0.csv"):
+                    continue 
+
+                generated_new_data = True
                 
                 if not os.path.exists(training_trajectory_filepath):
                     os.makedirs(training_trajectory_filepath)
@@ -852,16 +858,17 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
             
             sweep_param_obs_size = obs_size
             
-            root_data_dir = f"{root_dir}/data/zelda/{mode}"
-            if not os.path.exists(root_data_dir):
-                os.makedirs(root_data_dir)
+
                 
 
-            for sample_num in range(1,6):
-                sample_id += 1
+            for sample_id in range(1,6):
 
                 goal_stats_set[f"{combo_id}_{sample_id}"] = []
                 training_trajectory_filepath = f"{root_data_dir}/comboID_{combo_id}_sampleID_{sample_id}"
+                if os.path.isfile(f"{training_trajectory_filepath}/trajectories/0.csv"):
+                    continue 
+                
+                generated_new_data = True
                 
                 if not os.path.exists(training_trajectory_filepath):
                     os.makedirs(training_trajectory_filepath)
@@ -1086,10 +1093,11 @@ def generate_training_data_zelda(combo_ids, sweep_params, mode, username):
             df_goal_stats = pd.DataFrame(goal_stats_set[f"{combo_id}_{sample_id}"])
             df_goal_stats.to_csv(f"{goal_stats_map_root_path}/goal_stats_COMBO_ID_{combo_id}_SAMPLE_ID_{sample_id}.csv", mode="a", header=not os.path.exists(f"{goal_stats_map_root_path}/goal_stats_COMBO_ID_{combo_id}_SAMPLE_ID_{sample_id}.csv"), index=False)
 
-    df_sweep_schema = pd.DataFrame(sweep_schema)
-    df_sweep_schema.to_csv(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv", mode="a", header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv"), index=False)
+    if generated_new_data:
+        df_sweep_schema = pd.DataFrame(sweep_schema)
+        df_sweep_schema.to_csv(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv", mode="a", header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/sweep_schema.csv"), index=False)
 
-    df_map_start_and_goal_map_schema = pd.DataFrame(start_and_goal_shema_map)
-    df_map_start_and_goal_map_schema.to_csv(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv", mode="a", index=False, header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv"))
+        df_map_start_and_goal_map_schema = pd.DataFrame(start_and_goal_shema_map)
+        df_map_start_and_goal_map_schema.to_csv(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv", mode="a", index=False, header=not os.path.exists(f"{root_dir}/data/zelda/{mode}/start_and_goal_shema_map.csv"))
 
 

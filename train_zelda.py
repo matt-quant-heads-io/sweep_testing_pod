@@ -23,8 +23,11 @@ def train_zelda(combo_ids, sweep_params, mode, username):
     if mode == "non_controllable":
         for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
             for sample_id in range(1,2):
-                parent_path = f"{root_path_prefix}_sampleID_{sample_id}"
+                parent_path = f"{root_path}/comboID_{combo_id}_sampleID_{sample_id}"
                 model_path = f"{parent_path}/models"
+                if os.path.isfile(f"{model_path}/1.h5"):
+                    continue 
+
                 trajectories_path = f"{parent_path}/trajectories"
                 trajectories_to_cleanup.append(trajectories_path)
                 
@@ -82,8 +85,10 @@ def train_zelda(combo_ids, sweep_params, mode, username):
     elif mode == "controllable":
         for combo_id, (obs_size, goal_set_size, trajectory_length, training_dataset_size) in zip(combo_ids, sweep_params):
             for sample_id in range(1,2):
-                parent_path = f"{root_path_prefix}_sampleID_{sample_id}"
+                parent_path = f"{root_path}/comboID_{combo_id}_sampleID_{sample_id}"
                 model_path = f"{parent_path}/models"
+                if os.path.isfile(f"{model_path}/1.h5"):
+                    continue 
                 trajectories_path = f"{parent_path}/trajectories"
 
                 trajectories_to_cleanup.append(trajectories_path)

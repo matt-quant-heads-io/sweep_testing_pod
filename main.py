@@ -44,6 +44,7 @@ def main(combo_id, sweep_params, domain, mode, username):
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
 def get_sweep_params(cfg : DictConfig):
+    # cfg.experiments.exp_name
     params_combos_list = list(product(cfg.obs_sizes, cfg.experiments.goal_set_sizes, cfg.trajectory_lengths, cfg.training_dataset_sizes))
     params_list_lens = len(params_combos_list)
     combo_ids = cfg.experiments.combo_ids
@@ -53,7 +54,7 @@ def get_sweep_params(cfg : DictConfig):
 
     log_folder = "logs/%j"
     executor = submitit.AutoExecutor(folder=log_folder)
-    executor.update_parameters(slurm_array_parallelism=10, gpus_per_node=4, cpus_per_task=48, mem_gb=50)
+    executor.update_parameters(slurm_array_parallelism=10, gpus_per_node=4, cpus_per_task=48, mem_gb=50, timeout_min=144000)
     
     
     job = executor.submit(main, combo_ids, sweep_params, domain, mode, username)

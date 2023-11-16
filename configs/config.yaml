@@ -1,5 +1,6 @@
 defaults:
   - experiments: exp_1
+  - _self_
 training_dataset_sizes:
   - 100000
   - 500000
