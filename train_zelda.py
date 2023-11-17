@@ -11,7 +11,7 @@ import numpy as np
 from keras.utils import np_utils
 
 
-def train_zelda(combo_ids, sweep_params, mode, username):
+def train_zelda(combo_id, sweep_params, mode, username):
     root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}" # For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/zelda/{mode}"
     root_path_prefix = f"{root_path}/comboID_{combo_id}"
 
