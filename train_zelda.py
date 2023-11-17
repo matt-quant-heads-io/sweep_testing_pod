@@ -14,12 +14,9 @@ from keras.utils import np_utils
 def train_zelda(combo_id, sweep_params, mode, username):
     root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}" # For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/zelda/{mode}"
     root_path_prefix = f"{root_path}/comboID_{combo_id}"
-
-    sweep_schema_path = f"{root_path}/sweep_schema.csv" # For testing on matt's computer: f"/Users/matt/sweep_testing_pod/data/zelda/{mode}/sweep_schema.csv"
-    df_sweep_schema = pd.read_csv(sweep_schema_path)
     obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
-    trajectories_to_cleanup = []
     
+    trajectories_to_cleanup = []
     if mode == "non_controllable":
         for sample_id in range(1,4):
             combo_id_path = f"{root_path}/comboID_{combo_id}"
