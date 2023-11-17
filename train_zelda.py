@@ -62,7 +62,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
                 tf.keras.layers.Dense(8, activation='softmax')
             ])
 
-            model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=[tf.keras.metrics.CategoricalAccuracy()])
+            model.compile(loss='categorical_crossentropy', optimizer='rmsprop', metrics=[tf.keras.metrics.CategoricalAccuracy(name="categorical_accuracy")])
             mcp_save = ModelCheckpoint(model_abs_path, save_best_only=True, monitor='categorical_accuracy', mode='max')
             es = EarlyStopping(
                 monitor='categorical_accuracy',
