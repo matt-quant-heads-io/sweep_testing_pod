@@ -51,9 +51,10 @@ def get_sweep_params(cfg : DictConfig):
     mode = cfg.mode
     username = cfg.username
 
-    log_folder = "logs/%j"
+    log_folder = f"logs/{cfg.experiments.exp_name}"
     executor = submitit.AutoExecutor(folder=log_folder)
-    executor.update_parameters(slurm_array_parallelism=10, gpus_per_node=4, cpus_per_task=48, mem_gb=50, timeout_min=1440)
+    executor.update_parameters(gpus_per_node=1, cpus_per_task=1, mem_gb=50, timeout_min=1440)
+    #executor.update_parameters(slurm_array_parallelism=10, gpus_per_node=4, cpus_per_task=48, mem_gb=50, timeout_min=1440)
     
     
     job = executor.submit(main, combo_ids, sweep_params, domain, mode, username)
