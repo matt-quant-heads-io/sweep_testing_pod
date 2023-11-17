@@ -33,7 +33,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
 
             for file in os.listdir(trajectories_path):
                 print(f"compiling df {file}")
-                df = pd.read_csv(f"{trajectories_path}/{file}")[:1000]
+                df = pd.read_csv(f"{trajectories_path}/{file}")
                 dfs.append(df)
 
             df = pd.concat(dfs)
@@ -172,7 +172,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
                 mode="max",
             )
             es = EarlyStopping(
-                monitor='categorical_accuracy',
+                monitor='cnn_cond_counting_model_acc',
                 min_delta=0,
                 patience=50,
                 verbose=0,
