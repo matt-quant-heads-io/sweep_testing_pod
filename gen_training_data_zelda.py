@@ -826,7 +826,7 @@ def generate_training_data_zelda(combo_id, sweep_params, mode, username):
                     print(f"saving df at ts {total_steps}")
                     df = pd.DataFrame(data=exp_traj_dict)
                     df.to_csv(
-                        f"{sample_id_path}/{save_count}.csv",
+                        f"{sample_id_path}/trajectories/{save_count}.csv",
                         index=False, mode="a", header=not os.path.exists(f"{sample_id_path}/{save_count}.csv")
                     )
                     save_count += 1
@@ -835,7 +835,7 @@ def generate_training_data_zelda(combo_id, sweep_params, mode, username):
                 print(f"saving df at ts {total_steps}")
                 df = pd.DataFrame(data=exp_traj_dict)
                 df.to_csv(
-                    f"{sample_id_path}/{save_count}.csv",
+                    f"{sample_id_path}/trajectories/{save_count}.csv",
                     index=False,
                     mode="a", header=not os.path.exists(f"{sample_id_path}/{save_count}.csv")
                 )
@@ -1018,7 +1018,7 @@ def generate_training_data_zelda(combo_id, sweep_params, mode, username):
                     cols_to_keep = [f"col_{i}" for i in range(dict_len)] + ["num_regions_signed", "num_enemies_signed", "nearest_enemy_signed", "path_length_signed", "target"]
                     df = pd.DataFrame(data=exp_traj_dict)
                     df[cols_to_keep].to_csv(
-                        f"{sample_id_path}/{save_count}.csv",
+                        f"{sample_id_path}/trajectories/{save_count}.csv",
                         index=False, mode="a", header=not os.path.exists(f"{sample_id_path}/{save_count}.csv")
                     )
 
@@ -1048,7 +1048,7 @@ def generate_training_data_zelda(combo_id, sweep_params, mode, username):
                 cols_to_keep = [f"col_{i}" for i in range(dict_len)] + ["num_regions_signed", "num_enemies_signed", "nearest_enemy_signed", "path_length_signed", "target"]
                 df = pd.DataFrame(data=exp_traj_dict)
                 df[cols_to_keep].to_csv(
-                            f"{sample_id_path}/{save_count}.csv",
+                            f"{sample_id_path}/trajectories/{save_count}.csv",
                             index=False,
                             mode="a", header=not os.path.exists(f"{sample_id_path}/{save_count}.csv")
                         )
