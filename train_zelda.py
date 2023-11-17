@@ -51,7 +51,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
 
             X = np.array(X)
 
-            model_abs_path = f"{model_path}/{model_count}.h5"
+            model_abs_path = f"{model_path}/{sample_id}.h5"
 
             model = tf.keras.models.Sequential([
                 tf.keras.layers.Conv2D(128, (3, 3), activation='relu', input_shape=(obs_size, obs_size, 8), padding="SAME"),
@@ -126,7 +126,7 @@ def train_zelda(combo_id, sweep_params, mode, username):
 
             X = np.array(X)
 
-            model_abs_path = f"{model_path}/{model_count}.h5"
+            model_abs_path = f"{model_path}/{sample_id}.h5"
             inputs = [
                 Input(shape=(obs_size, obs_size, 8), name="obs"),
                 Input(shape=(signed_inputs.shape[1],), name="signed_inputs"),
