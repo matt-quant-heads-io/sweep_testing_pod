@@ -29,31 +29,29 @@ class PcgrlEnv(gym.Env):
     """
 
     def __init__(self, prob="binary", rep="narrow"):
-        self._prob = PROBLEMS[prob]()
+        self.prob = PROBLEMS[prob]()
         self.rep = REPRESENTATIONS[rep]()
         self._rep_stats = None
         self._iteration = 0
         self._changes = 0
-        self._max_changes = max(int(0.2 * self._prob._width * self._prob._height), 1)
-        self._max_iterations = (
-            self._max_changes * self._prob._width * self._prob._height
-        )
-        self._heatmap = np.zeros((self._prob._height, self._prob._width))
+        self._max_changes = max(int(0.2 * self.prob._width * self.prob._height), 1)
+        self._max_iterations = self._max_changes * self.prob._width * self.prob._height
+        self._heatmap = np.zeros((self.prob._height, self.prob._width))
 
         self.seed()
         self.viewer = None
 
         self.action_space = self.rep.get_action_space(
-            self._prob._width, self._prob._height, self.get_num_tiles()
+            self.prob._width, self.prob._height, self.get_num_tiles()
         )
         self.observation_space = self.rep.get_observation_space(
-            self._prob._width, self._prob._height, self.get_num_tiles()
+            self.prob._width, self.prob._height, self.get_num_tiles()
         )
         self.observation_space.spaces["heatmap"] = spaces.Box(
             low=0,
             high=self._max_changes,
             dtype=np.uint8,
-            shape=(self._prob._height, self._prob._width),
+            shape=(self.prob._height, self.prob._width),
         )
 
     """
@@ -69,7 +67,7 @@ class PcgrlEnv(gym.Env):
 
     def seed(self, seed=None):
         seed = self.rep.seed(seed)
-        self._prob.seed(seed)
+        self.prob.seed(seed)
         return [seed]
 
     """
@@ -84,15 +82,15 @@ class PcgrlEnv(gym.Env):
         self._changes = 0
         self._iteration = 0
         self.rep.reset(
-            self._prob._width,
-            self._prob._height,
-            get_int_prob(self._prob._prob, self._prob.get_tile_types()),
+            self.prob._width,
+            self.prob._height,
+            get_int_prob(self.prob._prob, self.prob.get_tile_types()),
         )
-        self._rep_stats = self._prob.get_stats(
-            get_string_map(self.rep._map, self._prob.get_tile_types())
+        self._rep_stats = self.prob.get_stats(
+            get_string_map(self.rep._map, self.prob.get_tile_types())
         )
-        self._prob.reset(self._rep_stats)
-        self._heatmap = np.zeros((self._prob._height, self._prob._width))
+        self.prob.reset(self._rep_stats)
+        self._heatmap = np.zeros((self.prob._height, self.prob._width))
 
         observation = self.rep.get_observation()
         observation["heatmap"] = self._heatmap.copy()
@@ -106,7 +104,7 @@ class PcgrlEnv(gym.Env):
     """
 
     def get_border_tile(self):
-        return self._prob.get_tile_types().index(self._prob._border_tile)
+        return self.prob.get_tile_types().index(self.prob._border_tile)
 
     """
     Get the number of different type of tiles that are allowed in the observation
@@ -116,7 +114,7 @@ class PcgrlEnv(gym.Env):
     """
 
     def get_num_tiles(self):
-        return len(self._prob.get_tile_types())
+        return len(self.prob.get_tile_types())
 
     """
     Adjust the used parameters by the problem or representation
@@ -133,24 +131,22 @@ class PcgrlEnv(gym.Env):
         if "change_percentage" in kwargs:
             percentage = min(1, max(0, kwargs.get("change_percentage")))
             self._max_changes = max(
-                int(percentage * self._prob._width * self._prob._height), 1
+                int(percentage * self.prob._width * self.prob._height), 1
             )
-        self._max_iterations = (
-            self._max_changes * self._prob._width * self._prob._height
-        )
-        self._prob.adjust_param(**kwargs)
+        self._max_iterations = self._max_changes * self.prob._width * self.prob._height
+        self.prob.adjust_param(**kwargs)
         self.rep.adjust_param(**kwargs)
         self.action_space = self.rep.get_action_space(
-            self._prob._width, self._prob._height, self.get_num_tiles()
+            self.prob._width, self.prob._height, self.get_num_tiles()
         )
         self.observation_space = self.rep.get_observation_space(
-            self._prob._width, self._prob._height, self.get_num_tiles()
+            self.prob._width, self.prob._height, self.get_num_tiles()
         )
         self.observation_space.spaces["heatmap"] = spaces.Box(
             low=0,
             high=self._max_changes,
             dtype=np.uint8,
-            shape=(self._prob._height, self._prob._width),
+            shape=(self.prob._height, self.prob._width),
         )
 
     """
@@ -175,30 +171,30 @@ class PcgrlEnv(gym.Env):
     #     if change > 0:
     #         self._changes += change
     #         self._heatmap[y][x] += 1.0
-    #         self._rep_stats = self._prob.get_stats(
-    #             get_string_map(self.rep._map, self._prob.get_tile_types())
+    #         self._rep_stats = self.prob.get_stats(
+    #             get_string_map(self.rep._map, self.prob.get_tile_types())
     #         )
     #     # calculate the values
     #     observation = self.rep.get_observation()
     #     observation["heatmap"] = self._heatmap.copy()
-    #     reward = self._prob.get_reward(self._rep_stats, old_stats)
+    #     reward = self.prob.get_reward(self._rep_stats, old_stats)
     #     done = (
-    #         self._prob.get_episode_over(self._rep_stats, old_stats)
+    #         self.prob.get_episode_over(self._rep_stats, old_stats)
     #         or self._changes >= self._max_changes
     #         or self._iteration >= self._max_iterations
     #     )
     #     # similarity reward at the end of episode
     #     if done:
-    #         sim_reward = self._prob.get_similarity_rewrad(self._rep_stats)
+    #         sim_reward = self.prob.get_similarity_rewrad(self._rep_stats)
     #         reward = -sim_reward
 
-    #     info = self._prob.get_debug_info(self._rep_stats, old_stats)
+    #     info = self.prob.get_debug_info(self._rep_stats, old_stats)
     #     info["iterations"] = self._iteration
     #     info["changes"] = self._changes
     #     info["max_iterations"] = self._max_iterations
     #     info["max_changes"] = self._max_changes
-    #     info["solved"] = self._prob.get_episode_over(self._rep_stats, old_stats)
-    #     info["final_map"] = get_string_map(self.rep._map, self._prob.get_tile_types())
+    #     info["solved"] = self.prob.get_episode_over(self._rep_stats, old_stats)
+    #     info["final_map"] = get_string_map(self.rep._map, self.prob.get_tile_types())
     #     info["x"] = self.rep._x
     #     info["y"] = self.rep._y
     #     # return the values
@@ -213,25 +209,25 @@ class PcgrlEnv(gym.Env):
         if change > 0:
             self._changes += change
             self._heatmap[y][x] += 1.0
-            self._rep_stats = self._prob.get_stats(
-                get_string_map(self.rep._map, self._prob.get_tile_types())
+            self._rep_stats = self.prob.get_stats(
+                get_string_map(self.rep._map, self.prob.get_tile_types())
             )
         # calculate the values
         observation = self.rep.get_observation()
         observation["heatmap"] = self._heatmap.copy()
-        reward = self._prob.get_reward(self._rep_stats, old_stats)
+        reward = self.prob.get_reward(self._rep_stats, old_stats)
         done = (
-            self._prob.get_episode_over(self._rep_stats, old_stats)
+            self.prob.get_episode_over(self._rep_stats, old_stats)
             or self._changes >= self._max_changes
             or self._iteration >= self._max_iterations
         )
-        info = self._prob.get_debug_info(self._rep_stats, old_stats)
+        info = self.prob.get_debug_info(self._rep_stats, old_stats)
         info["iterations"] = self._iteration
         info["changes"] = self._changes
         info["max_iterations"] = self._max_iterations
         info["max_changes"] = self._max_changes
-        info["solved"] = self._prob.get_episode_over(self._rep_stats, old_stats)
-        info["final_map"] = get_string_map(self.rep._map, self._prob.get_tile_types())
+        info["solved"] = self.prob.get_episode_over(self._rep_stats, old_stats)
+        info["final_map"] = get_string_map(self.rep._map, self.prob.get_tile_types())
         info["x"] = self.rep._x
         info["y"] = self.rep._y
         # return the values
@@ -249,11 +245,11 @@ class PcgrlEnv(gym.Env):
 
     def render(self, mode="human"):
         tile_size = 16
-        img = self._prob.render(
-            get_string_map(self.rep._map, self._prob.get_tile_types())
+        img = self.prob.render(
+            get_string_map(self.rep._map, self.prob.get_tile_types())
         )
         img = self.rep.render(
-            img, self._prob._tile_size, self._prob._border_size
+            img, self.prob._tile_size, self.prob._border_size
         ).convert("RGB")
         if mode == "rgb_array":
             return img
