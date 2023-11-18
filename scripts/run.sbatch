@@ -12,7 +12,10 @@
 
 
 
-source /scratch/ms12010/overlay/env.sh
+source /scratch/${USER}/overlay/env.sh
 conda activate sweep_testing_pod
 
-/scratch/ms12010/overlay/miniconda3/envs/sweep_testing_pod/bin/python /scratch/ms12010/overlay/sweep_testing_pod/main.py experiments=exp_$SLURM_ARRAY_TASK_ID +mode=controllable +username=ms12010 +domain=zelda
+source /scratch/${USER}/overlay/sweep_testing_pod/env.sh
+cd ${PROJECT_ROOT}
+
+python main.py experiments=exp_1 +mode=controllable +username=ms12010 +domain=zelda

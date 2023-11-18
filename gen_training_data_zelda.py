@@ -267,82 +267,6 @@ def generate_training_data_zelda(sweep_params, mode):
 
         return map_stats
 
-    def generate_pod_greedy_tiles(
-        env,
-        random_target_map,
-        goal_starting_map,
-        total_steps,
-        training_dataset_size,
-        ep_len,
-        crop_size,
-    ):
-        play_trace = []
-        old_map = goal_starting_map.copy()
-        random_map = random_target_map.copy()
-        current_loc = [
-            random.randint(0, len(random_target_map) - 1),
-            random.randint(0, len(random_target_map[0]) - 1),
-        ]
-        env.rep._old_map = np.array([np.array(l) for l in goal_starting_map])
-        env.rep._x = current_loc[1]
-        env.rep._y = current_loc[0]
-        row_idx, col_idx = current_loc[0], current_loc[1]
-        tile_count = 0
-
-        hamm = compute_hamm_dist(random_target_map, goal_starting_map)
-        curr_step = 0
-        episode_len = ep_len
-        env.reset()
-        env.reset()
-        while (
-            hamm > 0.0
-            and curr_step < episode_len
-            and total_steps < training_dataset_size
-        ):
-            curr_step += 1
-            total_steps += 1
-
-            new_map = old_map.copy()
-            transition_info_at_step = [None, None, None]
-            rep._x = col_idx
-            rep._y = row_idx
-
-            new_map[row_idx] = old_map[row_idx].copy()
-
-            # existing tile type on the goal map
-            old_tile_type = old_map[row_idx][col_idx]
-
-            # new destructive tile
-            new_tile_type = random_target_map[row_idx][col_idx]
-
-            expert_action = [row_idx, col_idx, old_tile_type]
-            destructive_action = [row_idx, col_idx, new_tile_type]
-            transition_info_at_step[1] = destructive_action.copy()
-            transition_info_at_step[2] = expert_action.copy()
-            new_map[row_idx][col_idx] = new_tile_type
-
-            play_trace.append(
-                (
-                    transform(random_map.copy(), col_idx, row_idx, crop_size),
-                    expert_action.copy(),
-                )
-            )
-            random_map[row_idx][col_idx] = old_tile_type
-
-            old_map = new_map
-
-            tile_count += 1
-            col_idx = random.randint(0, len(random_target_map[0]) - 1)
-            row_idx = random.randint(0, len(random_target_map) - 1)
-
-            hamm = compute_hamm_dist(random_target_map, old_map)
-            if hamm == 0.0:
-                play_trace.reverse()
-                return play_trace, total_steps
-
-        play_trace.reverse()
-        return play_trace, total_steps
-
     def generate_controllable_pod_greedy(
         env,
         random_target_map,
@@ -389,8 +313,6 @@ def generate_training_data_zelda(sweep_params, mode):
             and curr_step < episode_len
             and total_steps < training_dataset_size
         ):
-            curr_step += 1
-            total_steps += 1
 
             new_map = old_map.copy()
             transition_info_at_step = [None, None, None]
@@ -471,6 +393,8 @@ def generate_training_data_zelda(sweep_params, mode):
             col_idx = random.randint(0, len(random_target_map[0]) - 1)
             row_idx = random.randint(0, len(random_target_map) - 1)
 
+            curr_step += 1
+            total_steps += 1
             hamm = compute_hamm_dist(random_target_map, old_map)
             if hamm == 0.0:
                 play_trace.reverse()
@@ -625,7 +549,7 @@ def generate_training_data_zelda(sweep_params, mode):
             for i in range(len(pt)):
                 exp_traj_dict[f"col_{i}"].append(pt[i])
 
-        if total_steps > 0 and total_steps % min(training_dataset_size, 100000) == 0:
+        if total_steps == 100_000:
             cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
                 "num_regions_signed",
                 "num_enemies_signed",
@@ -635,64 +559,53 @@ def generate_training_data_zelda(sweep_params, mode):
             ]
             df = pd.DataFrame(data=exp_traj_dict)
             df[cols_to_keep].to_csv(
-                path_to_trajectory,
+                f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_100000.csv",
                 index=False,
-                mode="a",
+                header=not os.path.exists(path_to_trajectory),
+            )
+        elif total_steps == 200_000:
+            cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
+                "num_regions_signed",
+                "num_enemies_signed",
+                "nearest_enemy_signed",
+                "path_length_signed",
+                "target",
+            ]
+            df = pd.DataFrame(data=exp_traj_dict)
+            df[cols_to_keep].to_csv(
+                f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_200000.csv",
+                index=False,
+                header=not os.path.exists(path_to_trajectory),
+            )
+        elif total_steps == 300_000:
+            cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
+                "num_regions_signed",
+                "num_enemies_signed",
+                "nearest_enemy_signed",
+                "path_length_signed",
+                "target",
+            ]
+            df = pd.DataFrame(data=exp_traj_dict)
+            df[cols_to_keep].to_csv(
+                f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_300000.csv",
+                index=False,
                 header=not os.path.exists(path_to_trajectory),
             )
 
-            exp_traj_dict = OrderedDict()
-            exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
-            exp_traj_dict["num_regions_targets"] = []
-            exp_traj_dict["num_enemies_targets"] = []
-            exp_traj_dict["nearest_enemy_targets"] = []
-            exp_traj_dict["path_length_targets"] = []
-
-            exp_traj_dict["actual_num_regions"] = []
-            exp_traj_dict["actual_num_enemies"] = []
-            exp_traj_dict["actual_nearest_enemy"] = []
-            exp_traj_dict["actual_path_length"] = []
-
-            exp_traj_dict["num_regions_signed"] = []
-            exp_traj_dict["num_enemies_signed"] = []
-            exp_traj_dict["nearest_enemy_signed"] = []
-            exp_traj_dict["path_length_signed"] = []
-
-            exp_traj_dict["target"] = []
-
-    if total_steps > 0 and total_steps % min(training_dataset_size, 100000) != 0:
-        cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
-            "num_regions_signed",
-            "num_enemies_signed",
-            "nearest_enemy_signed",
-            "path_length_signed",
-            "target",
-        ]
-        df = pd.DataFrame(data=exp_traj_dict)
-        df[cols_to_keep].to_csv(
-            path_to_trajectory,
-            index=False,
-            mode="a",
-            header=not os.path.exists(path_to_trajectory),
-        )
-        exp_traj_dict = OrderedDict()
-        exp_traj_dict = {f"col_{i}": [] for i in range(dict_len)}
-        exp_traj_dict["num_regions_targets"] = []
-        exp_traj_dict["num_enemies_targets"] = []
-        exp_traj_dict["nearest_enemy_targets"] = []
-        exp_traj_dict["path_length_targets"] = []
-
-        exp_traj_dict["actual_num_regions"] = []
-        exp_traj_dict["actual_num_enemies"] = []
-        exp_traj_dict["actual_nearest_enemy"] = []
-        exp_traj_dict["actual_path_length"] = []
-
-        exp_traj_dict["num_regions_signed"] = []
-        exp_traj_dict["num_enemies_signed"] = []
-        exp_traj_dict["nearest_enemy_signed"] = []
-        exp_traj_dict["path_length_signed"] = []
-
-        exp_traj_dict["target"] = []
+    cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
+        "num_regions_signed",
+        "num_enemies_signed",
+        "nearest_enemy_signed",
+        "path_length_signed",
+        "target",
+    ]
+    df = pd.DataFrame(data=exp_traj_dict)
+    df[cols_to_keep].to_csv(
+        path_to_trajectory,
+        index=False,
+        header=not os.path.exists(path_to_trajectory),
+    )
+    del df
 
     goal_maps_set = None
 
