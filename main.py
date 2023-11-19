@@ -1,5 +1,7 @@
 from itertools import product
 import os
+import multiprocessing
+
 
 import hydra
 from omegaconf import DictConfig
@@ -28,9 +30,22 @@ def main(combo_ids, sweep_params, domain, mode):
     trajectories_to_generate = product(obs_sz, goal_sz, traj_len, td_sz)
 
     print(f"trajectories_to_generate: {trajectories_to_generate}")
-    for trajectory_params in trajectories_to_generate:
-        print(f"trajectory_params: {trajectory_params}")
-        gen_data_func(trajectory_params, mode)
+    with multiprocessing.Manager() as manager:
+        workers = []
+        for trajectory_params in trajectories_to_generate:
+            print(f"trajectory_params: {trajectory_params}")
+            workers.append(
+                multiprocessing.Process(
+                    target=gen_data_func, args=(trajectory_params, mode)
+                )
+            )
+
+        for wi, worker in enumerate(workers):
+            worker.start()
+            print(f"Started worker process {wi + 1}")
+        for wi, worker in enumerate(workers):
+            worker.join()
+            print(f"Joined worker process {wi + 1}")
 
     # Traing models
     # obs_sz, goal_sz, traj_len, td_sz = [
@@ -70,7 +85,7 @@ def run(cfg: DictConfig):
     executor.update_parameters(
         slurm_array_parallelism=1,
         gpus_per_node=1,
-        cpus_per_task=66,
+        cpus_per_task=11,
         mem_gb=50,
         timeout_min=1440,
     )

@@ -563,6 +563,15 @@ def generate_training_data_zelda(sweep_params, mode):
                 index=False,
                 header=not os.path.exists(path_to_trajectory),
             )
+
+            with open(
+                f"{trajectories_to_skip_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_100000.csv",
+                "w",
+            ) as f:
+                print(
+                    f"Finished generating training data for {trajectory_skip_filename}"
+                )
+                f.write("")
         elif total_steps == 200_000:
             cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
                 "num_regions_signed",
@@ -577,6 +586,15 @@ def generate_training_data_zelda(sweep_params, mode):
                 index=False,
                 header=not os.path.exists(path_to_trajectory),
             )
+
+            with open(
+                f"{trajectories_to_skip_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_200000.csv",
+                "w",
+            ) as f:
+                print(
+                    f"Finished generating training data for {trajectory_skip_filename}"
+                )
+                f.write("")
         elif total_steps == 300_000:
             cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
                 "num_regions_signed",
@@ -591,6 +609,15 @@ def generate_training_data_zelda(sweep_params, mode):
                 index=False,
                 header=not os.path.exists(path_to_trajectory),
             )
+
+            with open(
+                f"{trajectories_to_skip_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_300000.csv",
+                "w",
+            ) as f:
+                print(
+                    f"Finished generating training data for {trajectory_skip_filename}"
+                )
+                f.write("")
 
     cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
         "num_regions_signed",
