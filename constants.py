@@ -111,7 +111,7 @@ DOMAIN_VARS_ZELDA = {
                 int(7 * 11 * 1.0),
             ],
         ),
-        ("training_dataset_sizes", [100_000, 200_000, 300_000, 400_000]),
+        ("training_dataset_sizes", [400_000]),
     ],
 }
 TILES_MAP_ZELDA = DOMAIN_VARS_ZELDA["tiles_map"]

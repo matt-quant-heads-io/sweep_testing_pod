@@ -69,8 +69,8 @@ def run(cfg: DictConfig):
 
     executor.update_parameters(
         slurm_array_parallelism=1,
-        gpus_per_node=4,
-        cpus_per_task=48,
+        gpus_per_node=1,
+        cpus_per_task=66,
         mem_gb=50,
         timeout_min=1440,
     )
