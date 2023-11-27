@@ -4,6 +4,8 @@ from collections import OrderedDict
 import hashlib
 import struct
 import random
+from timeit import default_timer as timer
+from datetime import timedelta
 
 import numpy as np
 import pandas as pd
@@ -22,6 +24,12 @@ import constants
 
 
 def generate_training_data_zelda(sweep_params, mode):
+    start = timer()
+
+    # logger.info(f"Calling generate_training_data_zelda with params={sweep_params}, mode={mode}")
+    print(
+        f"Calling generate_training_data_zelda with params={sweep_params}, mode={mode}"
+    )
     if not os.path.exists(f"{constants.ZELDA_DATA_ROOT}/{mode}"):
         os.makedirs(f"{constants.ZELDA_DATA_ROOT}/{mode}")
 
@@ -31,9 +39,13 @@ def generate_training_data_zelda(sweep_params, mode):
     if not os.path.exists(trajectories_to_skip_dir):
         os.makedirs(trajectories_to_skip_dir)
 
-    obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
+    print(f"sweep_params: {sweep_params}")
+    (obs_size, goal_set_size, trajectory_length, training_dataset_size) = sweep_params
     trajectory_skip_filename = f"goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}.done"
-    if os.path.exists(f"{trajectories_to_skip_dir}/{trajectory_skip_filename}"):
+    trajectory_skip_filename_alt = f"goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}.csv"
+    if os.path.exists(
+        f"{trajectories_to_skip_dir}/{trajectory_skip_filename}"
+    ) or os.path.exists(f"{trajectories_to_skip_dir}/{trajectory_skip_filename_alt}"):
         print(f"Skipping training data generation for {trajectory_skip_filename}.")
         return
 
@@ -549,76 +561,6 @@ def generate_training_data_zelda(sweep_params, mode):
             for i in range(len(pt)):
                 exp_traj_dict[f"col_{i}"].append(pt[i])
 
-        if total_steps == 100_000:
-            cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
-                "num_regions_signed",
-                "num_enemies_signed",
-                "nearest_enemy_signed",
-                "path_length_signed",
-                "target",
-            ]
-            df = pd.DataFrame(data=exp_traj_dict)
-            df[cols_to_keep].to_csv(
-                f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_100000.csv",
-                index=False,
-                header=not os.path.exists(path_to_trajectory),
-            )
-
-            with open(
-                f"{trajectories_to_skip_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_100000.csv",
-                "w",
-            ) as f:
-                print(
-                    f"Finished generating training data for {trajectory_skip_filename}"
-                )
-                f.write("")
-        elif total_steps == 200_000:
-            cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
-                "num_regions_signed",
-                "num_enemies_signed",
-                "nearest_enemy_signed",
-                "path_length_signed",
-                "target",
-            ]
-            df = pd.DataFrame(data=exp_traj_dict)
-            df[cols_to_keep].to_csv(
-                f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_200000.csv",
-                index=False,
-                header=not os.path.exists(path_to_trajectory),
-            )
-
-            with open(
-                f"{trajectories_to_skip_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_200000.csv",
-                "w",
-            ) as f:
-                print(
-                    f"Finished generating training data for {trajectory_skip_filename}"
-                )
-                f.write("")
-        elif total_steps == 300_000:
-            cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
-                "num_regions_signed",
-                "num_enemies_signed",
-                "nearest_enemy_signed",
-                "path_length_signed",
-                "target",
-            ]
-            df = pd.DataFrame(data=exp_traj_dict)
-            df[cols_to_keep].to_csv(
-                f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_300000.csv",
-                index=False,
-                header=not os.path.exists(path_to_trajectory),
-            )
-
-            with open(
-                f"{trajectories_to_skip_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_300000.csv",
-                "w",
-            ) as f:
-                print(
-                    f"Finished generating training data for {trajectory_skip_filename}"
-                )
-                f.write("")
-
     cols_to_keep = [f"col_{i}" for i in range(dict_len)] + [
         "num_regions_signed",
         "num_enemies_signed",
@@ -627,11 +569,7 @@ def generate_training_data_zelda(sweep_params, mode):
         "target",
     ]
     df = pd.DataFrame(data=exp_traj_dict)
-    df[cols_to_keep].to_csv(
-        path_to_trajectory,
-        index=False,
-        header=not os.path.exists(path_to_trajectory),
-    )
+    df[cols_to_keep].to_csv(path_to_trajectory, index=False)
     del df
 
     goal_maps_set = None
@@ -639,3 +577,10 @@ def generate_training_data_zelda(sweep_params, mode):
     with open(f"{trajectories_to_skip_dir}/{trajectory_skip_filename}", "w") as f:
         print(f"Finished generating training data for {trajectory_skip_filename}")
         f.write("")
+
+    end = timer()
+
+    # logger.info(f"generate_training_data_zelda for params {traj_param_combo} took {timedelta(seconds=end-start)} seconds")
+    print(
+        f"generate_training_data_zelda for params {sweep_params} took {timedelta(seconds=end-start)} seconds"
+    )

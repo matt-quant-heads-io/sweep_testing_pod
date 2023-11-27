@@ -16,20 +16,8 @@ def get_paths_to_training_data(
     mode, goal_set_size, trajectory_length, training_dataset_size
 ):
     print(f"training_dataset_size: {training_dataset_size}")
-    if training_dataset_size == 500_000:
-        training_length_suffixes = ["100000", "400000"]
-    elif training_dataset_size == 600_000:
-        training_length_suffixes = ["200000", "400000"]
-    elif training_dataset_size == 700_000:
-        training_length_suffixes = ["100000", "200000", "400000"]
-    elif training_dataset_size == 800_000:
-        training_length_suffixes = ["100000", "300000", "400000"]
-    elif training_dataset_size == 900_000:
-        training_length_suffixes = ["200000", "300000", "400000"]
-    elif training_dataset_size == 1_000_000:
-        training_length_suffixes = ["100000", "200000", "300000", "400000"]
-    else:
-        training_length_suffixes = [training_dataset_size]
+    if training_dataset_size == 100_000:
+        training_length_suffixes = ["100000"]
 
     trajectories_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/trajectories"
     trajectory_filepaths_to_load = [
@@ -41,6 +29,8 @@ def get_paths_to_training_data(
 
 
 def train_zelda(combo_id, sweep_params, mode):
+    # logger.info(f"Calling train_zelda with params {sweep_params}")
+    print(f"Calling train_zelda with params {sweep_params}")
     models_to_skip_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/models_to_skip"
     if not os.path.exists(models_to_skip_dir):
         os.makedirs(models_to_skip_dir)
@@ -48,7 +38,7 @@ def train_zelda(combo_id, sweep_params, mode):
     obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
     models_to_train = [1, 2, 3]
     model_skip_filenames = [
-        f"obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.done"
+        f"obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.csv"
         for model_num in models_to_train
     ]
 
@@ -57,11 +47,11 @@ def train_zelda(combo_id, sweep_params, mode):
             models_to_train.remove(model_num)
             print(f"Skipping model training for {model_skip_filename}.")
 
-    combo_id_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/comboID_{combo_id}"
-    if not os.path.exists(combo_id_dir):
-        os.makedirs(combo_id_dir)
+    # combo_id_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/comboID_{combo_id}"
+    # if not os.path.exists(combo_id_dir):
+    #     os.makedirs(combo_id_dir)
 
-    models_dir = f"{combo_id_dir}/models"
+    models_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/models"
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
 
@@ -74,10 +64,14 @@ def train_zelda(combo_id, sweep_params, mode):
             training_data_files_locs = get_paths_to_training_data(
                 mode, goal_set_size, trajectory_length, training_dataset_size
             )
-            for abs_filepath in training_data_files_locs:
-                print(f"Loading df {abs_filepath}")
-                df = pd.read_csv(abs_filepath)
-                dfs.append(df)
+
+            try:
+                for abs_filepath in training_data_files_locs:
+                    print(f"Loading df {abs_filepath}")
+                    df = pd.read_csv(abs_filepath)
+                    dfs.append(df)
+            except:
+                return
 
             df = pd.concat(dfs)
 
@@ -141,26 +135,26 @@ def train_zelda(combo_id, sweep_params, mode):
             )
             es = EarlyStopping(
                 monitor="categorical_accuracy",
-                min_delta=0,
-                patience=50,
+                min_delta=0.00001,
+                patience=250,
                 verbose=0,
                 mode="max",
-                baseline=0.999,
-                restore_best_weights=False,
-                start_from_epoch=0,
+                baseline=0.9999,
+                restore_best_weights=True,
+                start_from_epoch=10,
             )
             history = model.fit(
                 X,
                 y,
-                epochs=250,
-                steps_per_epoch=64,
+                epochs=500,
+                steps_per_epoch=1024,
                 verbose=2,
                 callbacks=[mcp_save, es],
             )
 
             df_history = pd.DataFrame(history.history)
             df_history.to_csv(
-                f"{models_to_skip_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.done",
+                f"{models_to_skip_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.csv",
                 index=False,
             )
 
@@ -173,10 +167,14 @@ def train_zelda(combo_id, sweep_params, mode):
             training_data_files_locs = get_paths_to_training_data(
                 mode, goal_set_size, trajectory_length, training_dataset_size
             )
-            for abs_filepath in training_data_files_locs[:1]:
-                print(f"Loading df {abs_filepath}")
-                df = pd.read_csv(abs_filepath)[:1000]
-                dfs.append(df)
+
+            try:
+                for abs_filepath in training_data_files_locs:
+                    print(f"Loading df {abs_filepath}")
+                    df = pd.read_csv(abs_filepath)
+                    dfs.append(df)
+            except:
+                return
 
             df = pd.concat(dfs)
 
@@ -191,11 +189,14 @@ def train_zelda(combo_id, sweep_params, mode):
             nearest_enemy_signed = np_utils.to_categorical(
                 df[["nearest_enemy_signed"]] - 1
             )
+            print(f"nearest_enemy_signed shape: {nearest_enemy_signed.shape}")
             path_length_signed = np_utils.to_categorical(df[["path_length_signed"]] - 1)
+            print(f"path_length_signed shape: {path_length_signed.shape}")
 
             signed_inputs = np.column_stack(
                 (num_enemies_signed, nearest_enemy_signed, path_length_signed)
             )
+            print(f"signed_inputs shape: {signed_inputs.shape}")
 
             df.drop("num_regions_signed", axis=1, inplace=True)
             df.drop("num_enemies_signed", axis=1, inplace=True)
@@ -258,34 +259,53 @@ def train_zelda(combo_id, sweep_params, mode):
                 ],
             )
 
+            # Cat Acc
+            # counting_mcp_save = ModelCheckpoint(
+            #     model_abs_path,
+            #     save_best_only=True,
+            #     monitor="cnn_cond_counting_model_acc",
+            #     mode="max",
+            # )
+            # es = EarlyStopping(
+            #     monitor="cnn_cond_counting_model_acc",
+            #     min_delta=0.00001,
+            #     patience=950,
+            #     verbose=0,
+            #     mode="max",
+            #     baseline=0.9999,
+            #     restore_best_weights=False,
+            #     start_from_epoch=10,
+            # )
+
             counting_mcp_save = ModelCheckpoint(
                 model_abs_path,
                 save_best_only=True,
-                monitor="cnn_cond_counting_model_acc",
-                mode="max",
+                monitor="cnn_cond_counting_model_loss",
+                mode="min",
             )
-            es = EarlyStopping(
-                monitor="cnn_cond_counting_model_acc",
-                min_delta=0,
-                patience=50,
-                verbose=0,
-                mode="max",
-                baseline=0.999,
-                restore_best_weights=False,
-                start_from_epoch=0,
-            )
+            # es = EarlyStopping(
+            #     monitor="cnn_cond_counting_model_loss",
+            #     min_delta=0.00001,
+            #     patience=1000,
+            #     verbose=0,
+            #     mode="min",
+            #     baseline=0.9999,
+            #     restore_best_weights=True,
+            #     start_from_epoch=10,
+            # )
 
             counting_history = conditional_counting_cnn_model.fit(
                 [X, signed_inputs],
                 y,
-                epochs=250,
-                steps_per_epoch=64,
+                epochs=500,
+                steps_per_epoch=8,
                 verbose=2,
-                callbacks=[counting_mcp_save, es],
+                # callbacks=[counting_mcp_save, es],
+                callbacks=[counting_mcp_save],
             )
 
             df_history = pd.DataFrame(counting_history.history)
             df_history.to_csv(
-                f"{models_to_skip_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.done",
+                f"{models_to_skip_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.csv",
                 index=False,
             )
