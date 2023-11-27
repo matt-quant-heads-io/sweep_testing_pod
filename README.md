@@ -13,11 +13,6 @@ The following setup assumes that you have the following file structure on hpc,
                                --  Miniconda3-latest-Linux-x86_64.sh # To install follow: https://sites.google.com/nyu.edu/nyu-hpc/hpc-systems/greene/getting-started-amd-nodes?authuser=0
 ```
 
-Once you have the files/dirs above properly installed source the required environment variables with,
-```
-source $SCRATCH/overlay/sweep_testing_pod/env.sh
-```
-
 Finally, cd into the cloned sweep_testing_pod repo.
 
 # Setup / Install
