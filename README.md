@@ -27,7 +27,7 @@ Finally, cd into the cloned sweep_testing_pod repo.
 Run the main.py script with:
 
 ```
-  python main.py --domain zelda --mode controllable --username ms12010 --debug
+  sh run_sweep.sh
 ```
 
 You will see the following error:
