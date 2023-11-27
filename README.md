@@ -52,6 +52,6 @@ To fix the issue comment out the following lines (239,240 from [gym]core.py):
 
 
 # Running
-## Data generation, training, and inference for Zelda
+## Data generation, training, and inference for Zelda (uncomment the mode you want to run in)
 
-```python main.py --domain zelda --mode controllable --username ms12010 --debug```
+```sh run_sweep.sh```
