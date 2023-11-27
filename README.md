@@ -1,5 +1,16 @@
 # sweep_testing_pod
 
+The following setup assumes that you have the following file structure on hpc,
+```
+   /scratch/<your username>/overlay
+                              |
+                                 sweep_testing_pod/ (this repo)
+
+                                 miniconda3/ # To install follow: https://sites.google.com/nyu.edu/nyu-hpc/hpc-systems/greene/getting-started-amd-nodes?authuser=0
+
+                                 Miniconda3-latest-Linux-x86_64.sh # To install follow: https://sites.google.com/nyu.edu/nyu-hpc/hpc-systems/greene/getting-started-amd-nodes?authuser=0
+```
+
 # Setup / Install
 ## Install dependencies
 ```
