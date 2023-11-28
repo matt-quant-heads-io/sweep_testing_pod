@@ -1,6 +1,13 @@
 defaults:
   - experiments: exp_1
   - _self_
+
+slurm: false
+mode: controllable
+domain: zelda
+process: train
+username: jd1010
+n_proc: 10
 training_dataset_sizes:
   - 100000
   - 500000

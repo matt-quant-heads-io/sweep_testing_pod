@@ -15,7 +15,7 @@ import constants
 RUN_PLAYBOOK = {"zelda": [generate_training_data_zelda, train_zelda, inference_zelda]}
 
 
-def main(combo_ids, sweep_params, domain, mode):
+def main(combo_ids, sweep_params, domain, mode, n_proc):
     if domain not in RUN_PLAYBOOK.keys():
         raise KeyError(f"domain must be one of {list(RUN_PLAYBOOK.keys())}")
 
@@ -31,21 +31,27 @@ def main(combo_ids, sweep_params, domain, mode):
 
     print(f"trajectories_to_generate: {trajectories_to_generate}")
     with multiprocessing.Manager() as manager:
-        workers = []
-        for trajectory_params in trajectories_to_generate:
-            print(f"trajectory_params: {trajectory_params}")
-            workers.append(
-                multiprocessing.Process(
-                    target=gen_data_func, args=(trajectory_params, mode)
+        trajectories_to_generate = [t for t in trajectories_to_generate]
+        for j, batch_traj_to_gen in enumerate([
+            trajectories_to_generate[i : i + n_proc]
+            for i in range(0, len(trajectories_to_generate), n_proc)
+        ]):
+            print(f"batch {j} of trajectories")
+            workers = []
+            for trajectory_params in batch_traj_to_gen:
+                print(f"trajectory_params: {trajectory_params}")
+                workers.append(
+                    multiprocessing.Process(
+                        target=gen_data_func, args=(trajectory_params, mode)
+                    )
                 )
-            )
 
-        for wi, worker in enumerate(workers):
-            worker.start()
-            print(f"Started worker process {wi + 1}")
-        for wi, worker in enumerate(workers):
-            worker.join()
-            print(f"Joined worker process {wi + 1}")
+            for wi, worker in enumerate(workers):
+                worker.start()
+                print(f"Started worker process {wi + 1}")
+            for wi, worker in enumerate(workers):
+                worker.join()
+                print(f"Joined worker process {wi + 1}")
 
     # Traing models
     # obs_sz, goal_sz, traj_len, td_sz = [
@@ -90,7 +96,14 @@ def run(cfg: DictConfig):
         timeout_min=1440,
     )
 
-    job = executor.submit(main, combo_ids, sweep_params, domain, mode)
+    if not cfg.slurm:
+        for combo_id, params in zip(combo_ids, sweep_params):
+            main(combo_id, params, domain, mode, cfg.n_proc)
+    
+    else:
+        print(f"params: {params}")
+        executor.submit(main, combo_ids, params, domain, mode)
+    # job = executor.submit(main, combo_ids, sweep_params, domain, mode)
     # print(f"job: {job}")
     # assert sum(job.done() for job in jobs) == len(sweep_params)
     # TODO: Talk to HPC about fastest hardware combination
