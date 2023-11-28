@@ -319,7 +319,6 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
     env = make_vec_envs(env_name, representation, None, 1, **kwargs)
     obs = env.reset()
-    obs = env.reset()
     dones = False
     action_mode = "greedy"
     prob = ZeldaProblem()
@@ -549,7 +548,6 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                     
                 dones = False
                 obs = env.reset()
-                obs = env.reset()
 
         results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", header=not os.path.exists(inference_results_path), index=False)
 
@@ -631,7 +629,6 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                     pass
                 
             dones = False
-            obs = env.reset()
             obs = env.reset()
 
         results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", header=not os.path.exists(inference_results_path), index=False)
