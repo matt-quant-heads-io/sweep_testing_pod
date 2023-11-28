@@ -162,3 +162,9 @@ outputs/*
 .DS_STORE
 data/*
 scratch.py
+
+# hydra / submitit loggings
+*.err
+*_submission.sh
+*_submitted.pkl
+*.out

@@ -305,7 +305,6 @@ def generate_training_data_zelda(sweep_params, mode):
         curr_step = 0
         episode_len = ep_len
         env.reset()
-        env.reset()
 
         new_map = old_map.copy()
         string_map_for_map_stats = str_arr_from_int_arr(new_map)
