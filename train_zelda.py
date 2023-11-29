@@ -184,13 +184,13 @@ def train_zelda(combo_id, sweep_params, mode):
             df.drop("target", axis=1, inplace=True)
             y = y.astype("int32")
 
-            num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]] - 1)
+            num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]]-1)
             print(f"num_enemies_signed shape: {num_enemies_signed.shape}")
             nearest_enemy_signed = np_utils.to_categorical(
-                df[["nearest_enemy_signed"]] - 1
+                df[["nearest_enemy_signed"]]-1
             )
             print(f"nearest_enemy_signed shape: {nearest_enemy_signed.shape}")
-            path_length_signed = np_utils.to_categorical(df[["path_length_signed"]] - 1)
+            path_length_signed = np_utils.to_categorical(df[["path_length_signed"]]-1)
             print(f"path_length_signed shape: {path_length_signed.shape}")
 
             signed_inputs = np.column_stack(
@@ -209,7 +209,7 @@ def train_zelda(combo_id, sweep_params, mode):
                         idx,
                         (21 - obs_size) * 8 : ((21 - obs_size) * 8 + 8 * obs_size**2),
                     ]
-                    .values.astype("float32")
+                    .values.astype("int32")
                     .reshape((obs_size, obs_size, 8))
                 )
                 X.append(x)
@@ -251,7 +251,7 @@ def train_zelda(combo_id, sweep_params, mode):
                         name="cnn_cond_counting_model_loss"
                     )
                 ],
-                optimizer=SGD(),
+                optimizer=SGD(learning_rate=0.01),
                 metrics=[
                     tf.keras.metrics.CategoricalAccuracy(
                         name="cnn_cond_counting_model_acc"
@@ -280,8 +280,8 @@ def train_zelda(combo_id, sweep_params, mode):
             counting_mcp_save = ModelCheckpoint(
                 model_abs_path,
                 save_best_only=True,
-                monitor="cnn_cond_counting_model_loss",
-                mode="min",
+                monitor="cnn_cond_counting_model_acc",
+                mode="max",
             )
             # es = EarlyStopping(
             #     monitor="cnn_cond_counting_model_loss",
