@@ -22,6 +22,11 @@ Finally, cd into the cloned sweep_testing_pod repo.
    conda activate sweep_test # Activate conda environment
    pip install -r requirements.txt # Install the requirements
 ```
+
+Set your environment variables:
+```
+export PROJECT_ROOT='./'; export ZELDA_DATA_ROOT={$PROJECT_ROOT}/data/zelda; export ZELDA_GOAL_MAPS_ROOT={$PROJECT_ROOT}/goal_maps/zelda
+```
 ## Test run (to fix identify the following error msg):
 
 Run the main.py script with:
