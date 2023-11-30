@@ -36,23 +36,25 @@ RUN_PLAYBOOK = {"zelda": [generate_training_data_zelda, train_zelda, inference_z
 
 #     return logger
 
+
 def init_logger(log_name="main"):
     log_root = pathlib.Path(__file__).parent.resolve()
     log_file = f"{log_root}/{log_name}.log"
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s> %(funcName)s::%(filename)s::%(lineno)s - %(message)s",
-        handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)]
+        handlers=[logging.FileHandler(log_file), logging.StreamHandler(sys.stdout)],
     )
+
 
 init_logger()
 
 
-def divide_chunks(l, n): 
-      
-    # looping till length l 
-    for i in range(0, len(l), n):  
-        yield l[i:i + n] 
+def divide_chunks(l, n):
+
+    # looping till length l
+    for i in range(0, len(l), n):
+        yield l[i : i + n]
 
 
 def main(combo_ids, sweep_params, domain, mode):
@@ -74,7 +76,11 @@ def main(combo_ids, sweep_params, domain, mode):
         workers = []
         for trajectory_params in trajectories_to_generate:
             print(f"trajectory_params: {trajectory_params}")
-            workers.append(multiprocessing.Process(target=gen_data_func, args=(trajectory_params, mode)))
+            workers.append(
+                multiprocessing.Process(
+                    target=gen_data_func, args=(trajectory_params, mode)
+                )
+            )
 
         for wi, worker in enumerate(workers):
             worker.start()
@@ -86,7 +92,9 @@ def main(combo_ids, sweep_params, domain, mode):
 
 def run_gen_data(traj_chunk, domains):
     # logger.info(f"Calling run_gen_data with traj chunks from {traj_chunk[0]} to {traj_chunk[len(traj_chunk)-1]}")
-    print(f"Calling run_gen_data with traj chunks from {traj_chunk[0]} to {traj_chunk[len(traj_chunk)-1]}")
+    print(
+        f"Calling run_gen_data with traj chunks from {traj_chunk[0]} to {traj_chunk[len(traj_chunk)-1]}"
+    )
     gen_data_func, train_func, infer_func = RUN_PLAYBOOK[domains[0]]
     mode = "controllable"
 
@@ -96,12 +104,16 @@ def run_gen_data(traj_chunk, domains):
         end = timer()
 
         # logger.info(f"generate_training_data_zelda for params {traj_param_combo} took {timedelta(seconds=end-start)} seconds")
-        print(f"generate_training_data_zelda for params {traj_param_combo} took {timedelta(seconds=end-start)} seconds")
+        print(
+            f"generate_training_data_zelda for params {traj_param_combo} took {timedelta(seconds=end-start)} seconds"
+        )
 
 
 def run_train(train_chunk, domains):
     # logger.info(f"Calling run_train with train chunks from {train_chunk[0]} to {train_chunk[len(train_chunk)-1]}")
-    print(f"Calling run_train with train chunks from {train_chunk[0]} to {train_chunk[len(train_chunk)-1]}")
+    print(
+        f"Calling run_train with train chunks from {train_chunk[0]} to {train_chunk[len(train_chunk)-1]}"
+    )
     # Traing models
     mode = "controllable"
     gen_data_func, train_func, infer_func = RUN_PLAYBOOK[domains[0]]
@@ -110,20 +122,23 @@ def run_train(train_chunk, domains):
         train_func(combo_id, params_combo, mode)
         end = timer()
 
-        logging.info(f"train_zelda (3 models) for params {params_combo} took {timedelta(seconds=end-start)} seconds")
+        logging.info(
+            f"train_zelda (3 models) for params {params_combo} took {timedelta(seconds=end-start)} seconds"
+        )
 
 
-def run_infer(infer_chunk, domains):
+def run_inference(infer_chunk, domains, username):
     gen_data_func, train_func, infer_func = RUN_PLAYBOOK[domains[0]]
     mode = "controllable"
 
-    for infer_param_combo in traj_chunk:
+    for infer_param_combo in infer_chunk:
         start = timer()
-        infer_func(infer_param_combo, mode)
+        infer_func(infer_param_combo, mode, username)
         end = timer()
 
-        logging.info(f"inference_zelda for params {infer_param_combo} took {timedelta(seconds=end-start)} seconds")
-        
+        logging.info(
+            f"inference_zelda for params {infer_param_combo} took {timedelta(seconds=end-start)} seconds"
+        )
 
 
 @hydra.main(version_base=None, config_path="configs", config_name="config")
@@ -136,24 +151,26 @@ def run(cfg: DictConfig):
 
         executor.update_parameters(
             slurm_array_parallelism=2,
-            #gpus_per_node=1,
+            # gpus_per_node=1,
             tasks_per_node=1,
-            cpus_per_task=4,
+            cpus_per_task=1,
             mem_gb=50,
             timeout_min=1440,
-            nodes=4
+            nodes=1,
         )
 
         print("Running process 'gen_train_data'")
         # Gen training data
         obs_sz, goal_sz, traj_len, td_sz = [
             param_vals_list[1]
-            for param_vals_list in constants.DOMAIN_VARS_ZELDA["trajectories_to_generate"]
+            for param_vals_list in constants.DOMAIN_VARS_ZELDA[
+                "trajectories_to_generate"
+            ]
         ]
         trajectories_to_generate = product(obs_sz, goal_sz, traj_len, td_sz)
         # print(f"trajectories_to_generate: {len(list(trajectories_to_generate))}")
-        traj_chunks = list(divide_chunks(list(trajectories_to_generate), 4)) # 4 chunks
-        domains = ["zelda"]*len(traj_chunks)
+        traj_chunks = list(divide_chunks(list(trajectories_to_generate), 4))  # 4 chunks
+        domains = ["zelda"] * len(traj_chunks)
 
         sum_runs = 0
         for traj_chunk in traj_chunks:
@@ -169,12 +186,12 @@ def run(cfg: DictConfig):
         init_logger("train")
         executor.update_parameters(
             slurm_array_parallelism=1,
-            #gpus_per_node=1,
+            # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,
             mem_gb=50,
             timeout_min=1440,
-            nodes=1
+            nodes=1,
         )
 
         print("Running process 'train'")
@@ -184,8 +201,10 @@ def run(cfg: DictConfig):
             for param_vals_list in constants.DOMAIN_VARS_ZELDA["sweep_params"]
         ]
         trajectories_to_generate = product(obs_sz, goal_sz, traj_len, td_sz)
-        train_chunks = list(divide_chunks(list(trajectories_to_generate), 4)) # 11 chunks
-        domains = ["zelda"]*len(train_chunks)
+        train_chunks = list(
+            divide_chunks(list(trajectories_to_generate), 4)
+        )  # 11 chunks
+        domains = ["zelda"] * len(train_chunks)
 
         sum_runs = 0
         for train_chunk in train_chunks:
@@ -201,12 +220,12 @@ def run(cfg: DictConfig):
     elif cfg.process == "inference":
         executor.update_parameters(
             slurm_array_parallelism=2,
-            #gpus_per_node=1,
+            # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,
             mem_gb=50,
             timeout_min=1440,
-            nodes=4
+            nodes=1,
         )
 
         print("Running process 'train'")
@@ -216,8 +235,10 @@ def run(cfg: DictConfig):
             for param_vals_list in constants.DOMAIN_VARS_ZELDA["sweep_params"]
         ]
         trajectories_to_generate = product(obs_sz, goal_sz, traj_len, td_sz)
-        inference_chunks = list(divide_chunks(list(trajectories_to_generate), 4)) # 11 chunks
-        domains = ["zelda"]*len(inference_chunks)
+        inference_chunks = list(
+            divide_chunks(list(trajectories_to_generate), 4)
+        )  # 11 chunks
+        domains = ["zelda"] * len(inference_chunks)
 
         sum_runs = 0
         for inference_chunk in inference_chunks:
@@ -227,11 +248,12 @@ def run(cfg: DictConfig):
         jobs = []
         with executor.batch():
             for inference_chunk in inference_chunks:
-                job = executor.submit(run_inference, inference_chunk, domains)
+                job = executor.submit(
+                    run_inference, inference_chunk, domains, cfg.username
+                )
                 jobs.append(job)
 
 
 if __name__ == "__main__":
     # args = get_args()
     run()
-    

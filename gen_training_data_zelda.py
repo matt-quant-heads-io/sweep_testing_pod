@@ -400,13 +400,18 @@ def generate_training_data_zelda(sweep_params, mode):
             )
             random_map[row_idx][col_idx] = old_tile_type
 
-            old_map = new_map
-
-            col_idx = random.randint(0, len(random_target_map[0]) - 1)
-            row_idx = random.randint(0, len(random_target_map) - 1)
-
             curr_step += 1
             total_steps += 1
+
+            old_map = new_map
+
+            col_idx += 1
+            if col_idx >= 11:
+                col_idx = 0
+                row_idx += 1
+                if row_idx >= 7:
+                    row_idx = 0
+
             hamm = compute_hamm_dist(random_target_map, old_map)
             if hamm == 0.0:
                 play_trace.reverse()
@@ -457,7 +462,7 @@ def generate_training_data_zelda(sweep_params, mode):
     exp_traj_dict["path_length_signed"] = []
 
     exp_traj_dict["target"] = []
-    num_start_maps = training_dataset_size // trajectory_length + 1
+    num_start_maps = training_dataset_size // trajectory_length
     start_maps = [
         gen_random_map(
             rng,

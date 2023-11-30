@@ -308,7 +308,16 @@ map_num_to_oh_dict = {}
 root_dir = "playable_maps"
 
 
-def infer(game, representation, model_abs_path, obs_size, model_num, mode, inference_results_path, combo_id, sample_id, **kwargs):
+def infer(
+    game,
+    representation,
+    model_abs_path,
+    obs_size,
+    model_num,
+    mode,
+    inference_results_path,
+    **kwargs,
+):
     """
     - max_trials: The number of trials per evaluation.
     - infer_kwargs: Args to pass to the environment.
@@ -344,7 +353,19 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
         path_length_tests = [
             (average_enemies, average_nearest_enemy, i) for i in range(20, 41)
         ]
-        results_dict = {"chg_pct":[], "enemies_input":[], "nearest_enemy_input": [], "path_length_input": [], "start_map":[], "final_map":[], "result":[], "target_enemies":[], "target_nearest_enemy":[], "target_path_length":[], "comboID":[], "sampleID":[], "model_num": []}
+        results_dict = {
+            "chg_pct": [],
+            "enemies_input": [],
+            "nearest_enemy_input": [],
+            "path_length_input": [],
+            "start_map": [],
+            "final_map": [],
+            "result": [],
+            "target_enemies": [],
+            "target_nearest_enemy": [],
+            "target_path_length": [],
+            "model_num": [],
+        }
 
         for target_enemies, target_nearest_enemy, target_path_length in (
             enemies_tests + nearest_enemy_tests + path_length_tests
@@ -364,27 +385,23 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                     print(f"j: {j}")
                     if is_start_map:
                         start_map = get_string_map(
-                                int_map_from_onehot(obs[0], obs_size),
-                                [
-                                    "empty",
-                                    "solid",
-                                    "player",
-                                    "key",
-                                    "door",
-                                    "bat",
-                                    "scorpion",
-                                    "spider",
-                                ],
+                            int_map_from_onehot(obs[0], obs_size),
+                            [
+                                "empty",
+                                "solid",
+                                "player",
+                                "key",
+                                "door",
+                                "bat",
+                                "scorpion",
+                                "spider",
+                            ],
                         )
                         start_level_str = ""
 
                         for row in start_map:
                             for col in row:
                                 start_level_str += REV_TILES_MAP[col]
-
-                        
-
-                        
 
                         is_start_map = False
 
@@ -408,7 +425,6 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                         enemies_input = map_stats["enemies"]
                         nearest_enemy_input = map_stats["nearest-enemy"]
                         path_length_input = map_stats["path-length"]
-                        
 
                         # Enemies
                         if enemies_input > target_enemies:
@@ -436,11 +452,9 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                         signed_inputs = enemies_diff + nearest_diff + path_length_diff
                         prediction = agent.predict(
-                            x=[np.array([obs[0]]),
-                                np.array([signed_inputs])],
-                                steps=1
-                            )
-                        
+                            x=[np.array([obs[0]]), np.array([signed_inputs])], steps=1
+                        )
+
                         if action_mode == "greedy":
 
                             # prediction = agent.predict(x={'input_1':np.array([obs[0]]), 'input_2': stats}, steps=1)
@@ -449,9 +463,7 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                             sum_pred_probs = sum(prediction)
                             a = D(1 / sum_pred_probs)
-                            pred_probs_scaled = [
-                                D(float(e)) * a for e in prediction
-                            ]
+                            pred_probs_scaled = [D(float(e)) * a for e in prediction]
                             action = np.random.choice(8, 1, p=pred_probs_scaled) + 1
                     except Exception:
                         map_stats = prob.get_stats(
@@ -499,10 +511,8 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                         signed_inputs = enemies_diff + nearest_diff + path_length_diff
                         prediction = agent.predict(
-                            x=[np.array([obs[0]]),
-                                np.array([signed_inputs])],
-                                steps=1
-                            )
+                            x=[np.array([obs[0]]), np.array([signed_inputs])], steps=1
+                        )
 
                         action = np.argmax(prediction) + 1
 
@@ -511,7 +521,12 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                     img = prob.render(info[0]["final_map"])
 
                     if info[0]["solved"]:
-                        if (abs(target_enemies - map_stats["enemies"]) <= 3 and abs(target_nearest_enemy - map_stats["nearest-enemy"]) <= 4 and abs(target_path_length - map_stats["path-length"]) <= 6):
+                        if (
+                            abs(target_enemies - map_stats["enemies"]) <= 3
+                            and abs(target_nearest_enemy - map_stats["nearest-enemy"])
+                            <= 4
+                            and abs(target_path_length - map_stats["path-length"]) <= 6
+                        ):
                             results_dict["result"].append("sucess")
                         else:
                             results_dict["result"].append("partial")
@@ -532,12 +547,12 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                                 level_str += REV_TILES_MAP[col]
 
                         results_dict["final_map"].append(level_str)
-                        results_dict["comboID"].append(combo_id)
-                        results_dict["sampleID"].append(sample_id)
                         results_dict["model_num"].append(model_num)
                         results_dict["start_map"].append(start_level_str)
                         results_dict["target_enemies"].append(target_enemies)
-                        results_dict["target_nearest_enemy"].append(target_nearest_enemy)
+                        results_dict["target_nearest_enemy"].append(
+                            target_nearest_enemy
+                        )
                         results_dict["target_path_length"].append(target_path_length)
                         results_dict["chg_pct"].append(kwargs["change_percentage"])
 
@@ -545,18 +560,28 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                     elif dones:
                         pass
-                        
-                    
+
                 dones = False
                 obs = env.reset()
                 obs = env.reset()
 
-        results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", header=not os.path.exists(inference_results_path), index=False)
+        results_df = pd.DataFrame(results_dict).to_csv(
+            inference_results_path,
+            mode="a",
+            header=not os.path.exists(inference_results_path),
+            index=False,
+        )
 
     elif mode == "non_controllable":
-        results_dict = {"chg_pct":[], "start_map":[], "final_map":[], "result":[], "comboID":[], "sampleID":[], "model_num": []}
+        results_dict = {
+            "chg_pct": [],
+            "start_map": [],
+            "final_map": [],
+            "result": [],
+            "model_num": [],
+        }
 
-        idx += 1      
+        idx += 1
         for i in range(kwargs.get("trials", 1)):
             j = 0
             is_start_map = True
@@ -565,24 +590,23 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                 print(f"j: {j}")
                 if is_start_map:
                     start_map = get_string_map(
-                            int_map_from_onehot(obs[0], obs_size),
-                            [
-                                "empty",
-                                "solid",
-                                "player",
-                                "key",
-                                "door",
-                                "bat",
-                                "scorpion",
-                                "spider",
-                            ],
+                        int_map_from_onehot(obs[0], obs_size),
+                        [
+                            "empty",
+                            "solid",
+                            "player",
+                            "key",
+                            "door",
+                            "bat",
+                            "scorpion",
+                            "spider",
+                        ],
                     )
                     level_str = ""
 
                     for row in start_map:
                         for col in row:
                             start_level_str += REV_TILES_MAP[col]
-
 
                     is_start_map = False
 
@@ -594,12 +618,10 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                         sum_pred_probs = sum(prediction)
                         a = D(1 / sum_pred_probs)
-                        pred_probs_scaled = [
-                            D(float(e)) * a for e in prediction
-                        ]
+                        pred_probs_scaled = [D(float(e)) * a for e in prediction]
                         action = np.random.choice(8, 1, p=pred_probs_scaled) + 1
                 except Exception:
-                    
+
                     print(f"np.array([obs[0]]): {np.array([obs[0]]).shape}")
                     prediction = agent.predict(np.array([obs[0]]))
                     action = np.argmax(prediction) + 1
@@ -620,8 +642,6 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
                             level_str += REV_TILES_MAP[col]
 
                     results_dict["final_map"].append(level_str)
-                    results_dict["comboID"].append(combo_id)
-                    results_dict["sampleID"].append(sample_id)
                     results_dict["model_num"].append(model_num)
                     results_dict["start_map"].append(start_level_str)
 
@@ -629,12 +649,17 @@ def infer(game, representation, model_abs_path, obs_size, model_num, mode, infer
 
                 elif dones:
                     pass
-                
+
             dones = False
             obs = env.reset()
             obs = env.reset()
 
-        results_df = pd.DataFrame(results_dict).to_csv(inference_results_path, mode="a", header=not os.path.exists(inference_results_path), index=False)
+        results_df = pd.DataFrame(results_dict).to_csv(
+            inference_results_path,
+            mode="a",
+            header=not os.path.exists(inference_results_path),
+            index=False,
+        )
 
 
 ################################## MAIN ########################################
@@ -648,27 +673,51 @@ kwargs = {
 }
 
 
-def inference_zelda(combo_id, sweep_params, mode, username):
-    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}" # For testing: 
+def inference_zelda(sweep_params, mode, username="ms12010"):
+    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}"#f'{os.environ["HOME"]}/sweep_testing_pod/data/zelda/{mode}'  # 
     obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
 
-    combo_id_path = f"{root_path}/comboID_{combo_id}"
-    
-    for sample_id in range(1, 4):
-        sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
-        model_count = sample_id
-        model_path = f"{sample_id_path}/models/{model_count}.h5"
-        inference_results_path = f"{sample_id_path}/inference_results.csv"
+    results_path = f"{root_path}/results"
+    if not os.path.exists(results_path):
+        os.makedirs(results_path)
 
-        if os.path.isfile(f"{sample_id_path}/results.done"):
+    # for sample_id in range(1, 4):
+    #     sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
+    #     model_count = sample_id
+
+    for model_count in range(1, 2):
+        inference_results_path = f"{results_path}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_count}_results.csv"
+        if os.path.exists(inference_results_path):
+            print(f"Found/skipping inference results path {inference_results_path}")
             continue
 
-        for model_count in range(1,4):
-            for chg_pct in range(1, 11):
-                kwargs["change_percentage"] = chg_pct / 10.0
-                infer(game, representation, model_path, obs_size, model_count, mode, inference_results_path, combo_id, sample_id, **kwargs)
+        model_path = f"{root_path}/models/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_count}.h5"
 
-            with open(f"{sample_id_path}/results.done", "w") as f:
-                f.write("")
+        infer(
+            game,
+            representation,
+            model_path,
+            obs_size,
+            model_count,
+            mode,
+            inference_results_path,
+            **kwargs,
+        )
 
+        # for chg_pct in range(1, 11):
+        #     kwargs["change_percentage"] = chg_pct / 10.0
+        #     infer(
+        #         game,
+        #         representation,
+        #         model_path,
+        #         obs_size,
+        #         model_count,
+        #         mode,
+        #         inference_results_path,
+        #         combo_id,
+        #         sample_id,
+        #         **kwargs,
+        #     )
 
+        # with open(f"{sample_id_path}/results.done", "w") as f:
+        #     f.write("")
