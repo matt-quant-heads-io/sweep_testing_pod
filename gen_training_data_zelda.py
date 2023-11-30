@@ -462,7 +462,7 @@ def generate_training_data_zelda(sweep_params, mode):
     exp_traj_dict["path_length_signed"] = []
 
     exp_traj_dict["target"] = []
-    num_start_maps = training_dataset_size // trajectory_length
+    num_start_maps = training_dataset_size // trajectory_length + 1
     start_maps = [
         gen_random_map(
             rng,
@@ -470,7 +470,7 @@ def generate_training_data_zelda(sweep_params, mode):
             constants.DOMAIN_VARS_ZELDA["env_y"],
             constants.DOMAIN_VARS_ZELDA["action_pronbabilities_map"],
         )
-        for _ in range(num_start_maps)
+        for _ in range(num_start_maps * 2)
     ]
 
     while total_steps < training_dataset_size:
@@ -532,6 +532,7 @@ def generate_training_data_zelda(sweep_params, mode):
             crop_size=obs_size,
         )
         total_steps = temp_num_steps
+        print(f"total_steps now: {total_steps}")
 
         play_traces.append(play_trace)
         for i, p_i in enumerate(play_trace):
