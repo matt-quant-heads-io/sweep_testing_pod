@@ -371,12 +371,6 @@ def infer(
             enemies_tests + nearest_enemy_tests + path_length_tests
         ):
             idx += 1
-            enemies, nearest_enemy, path_length = (
-                target_enemies,
-                target_nearest_enemy,
-                target_path_length,
-            )
-
             for i in range(kwargs.get("trials", 1)):
                 j = 0
                 is_start_map = True
@@ -518,7 +512,6 @@ def infer(
 
                     obs, _, dones, info = env.step([action])
                     map_stats = prob.get_stats(info[0]["final_map"])
-                    img = prob.render(info[0]["final_map"])
 
                     if info[0]["solved"]:
                         if (
@@ -558,19 +551,34 @@ def infer(
 
                         dones = True
 
+                        # Append data to df
+                        pd.DataFrame(results_dict).to_csv(
+                            inference_results_path,
+                            mode="a",
+                            header=not os.path.exists(inference_results_path),
+                            index=False,
+                        )
+                        # reset the dictionary to empty
+                        results_dict = {
+                            "chg_pct": [],
+                            "enemies_input": [],
+                            "nearest_enemy_input": [],
+                            "path_length_input": [],
+                            "start_map": [],
+                            "final_map": [],
+                            "result": [],
+                            "target_enemies": [],
+                            "target_nearest_enemy": [],
+                            "target_path_length": [],
+                            "model_num": [],
+                        }
+
                     elif dones:
                         pass
 
                 dones = False
                 obs = env.reset()
                 obs = env.reset()
-
-        results_df = pd.DataFrame(results_dict).to_csv(
-            inference_results_path,
-            mode="a",
-            header=not os.path.exists(inference_results_path),
-            index=False,
-        )
 
     elif mode == "non_controllable":
         results_dict = {
@@ -587,7 +595,7 @@ def infer(
             is_start_map = True
             while not dones:
                 j += 1
-                print(f"j: {j}")
+                # print(f"j: {j}")
                 if is_start_map:
                     start_map = get_string_map(
                         int_map_from_onehot(obs[0], obs_size),
@@ -674,7 +682,7 @@ kwargs = {
 
 
 def inference_zelda(sweep_params, mode, username="ms12010"):
-    root_path = f"/scratch/{username}/overlay/sweep_testing_pod/data/zelda/{mode}"#f'{os.environ["HOME"]}/sweep_testing_pod/data/zelda/{mode}'  # 
+    root_path = f'{os.environ["HOME"]}/sweep_testing_pod/data/zelda/{mode}'
     obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
 
     results_path = f"{root_path}/results"

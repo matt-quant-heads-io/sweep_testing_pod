@@ -16,7 +16,9 @@ def get_paths_to_training_data(
     mode, goal_set_size, trajectory_length, training_dataset_size
 ):
     print(f"training_dataset_size: {training_dataset_size}")
-    if training_dataset_size == 100_000:
+    if training_dataset_size == 1_000_000:
+        training_length_suffixes = ["1000000"]
+    elif training_dataset_size == 100_000:
         training_length_suffixes = ["100000"]
 
     trajectories_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/trajectories"
@@ -75,7 +77,7 @@ def train_zelda(combo_id, sweep_params, mode):
 
             df = pd.concat(dfs)
 
-            # df = df.sample(frac=1).reset_index(drop=True)
+            df = df.sample(frac=1).reset_index(drop=True)
             y_true = df[["target"]]
             y = np_utils.to_categorical(y_true)
             print(f"y: {y}")
@@ -86,9 +88,10 @@ def train_zelda(combo_id, sweep_params, mode):
                 x = (
                     df.iloc[
                         idx,
-                        (21 - obs_size) * 8 : ((21 - obs_size) * 8 + 8 * obs_size**2),
+                        (21 - obs_size)
+                        * 8 : (((21 - obs_size) * 8) + (8 * obs_size**2)),
                     ]
-                    .values.astype("float32")
+                    .values.astype("int")
                     .reshape((obs_size, obs_size, 8))
                 )
                 X.append(x)
@@ -182,15 +185,15 @@ def train_zelda(combo_id, sweep_params, mode):
             y_true = df[["target"]]
             y = np_utils.to_categorical(y_true)
             df.drop("target", axis=1, inplace=True)
-            y = y.astype("int32")
+            y = y.astype("int")
 
-            num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]]-1)
+            num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]] - 1)
             print(f"num_enemies_signed shape: {num_enemies_signed.shape}")
             nearest_enemy_signed = np_utils.to_categorical(
-                df[["nearest_enemy_signed"]]-1
+                df[["nearest_enemy_signed"]] - 1
             )
             print(f"nearest_enemy_signed shape: {nearest_enemy_signed.shape}")
-            path_length_signed = np_utils.to_categorical(df[["path_length_signed"]]-1)
+            path_length_signed = np_utils.to_categorical(df[["path_length_signed"]] - 1)
             print(f"path_length_signed shape: {path_length_signed.shape}")
 
             signed_inputs = np.column_stack(
@@ -207,12 +210,24 @@ def train_zelda(combo_id, sweep_params, mode):
                 x = (
                     df.iloc[
                         idx,
-                        (21 - obs_size) * 8 : ((21 - obs_size) * 8 + 8 * obs_size**2),
+                        (21 - obs_size)
+                        * 8 : (((21 - obs_size) * 8) + (8 * obs_size**2)),
                     ]
-                    .values.astype("int32")
+                    .values.astype("int")
                     .reshape((obs_size, obs_size, 8))
                 )
                 X.append(x)
+
+            # for idx in range(len(df)):
+            #     x = (
+            #         df.iloc[
+            #             idx,
+            #             :,
+            #         ]
+            #         .values.astype("int")
+            #         .reshape((obs_size, obs_size, 8))
+            #     )
+            #     X.append(x)
 
             X = np.array(X)
 
@@ -251,7 +266,7 @@ def train_zelda(combo_id, sweep_params, mode):
                         name="cnn_cond_counting_model_loss"
                     )
                 ],
-                optimizer=SGD(learning_rate=0.01),
+                optimizer=SGD(learning_rate=0.001),
                 metrics=[
                     tf.keras.metrics.CategoricalAccuracy(
                         name="cnn_cond_counting_model_acc"
@@ -298,7 +313,7 @@ def train_zelda(combo_id, sweep_params, mode):
                 [X, signed_inputs],
                 y,
                 epochs=500,
-                steps_per_epoch=8,
+                steps_per_epoch=8192,
                 verbose=2,
                 # callbacks=[counting_mcp_save, es],
                 callbacks=[counting_mcp_save],
