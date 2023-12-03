@@ -1,7 +1,7 @@
 #!/bin/bash
 
 source ${HOME}/sweep_testing_pod/env.sh
-/Users/matt/anaconda3/bin/conda activate sweep_testing_pod
+conda activate sweep_testing_pod
 
 cd ${PROJECT_ROOT}
 
