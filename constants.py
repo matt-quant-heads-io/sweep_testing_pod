@@ -68,13 +68,13 @@ DOMAIN_VARS_ZELDA = {
                 int(7 * 11 * 0.25),
                 int(7 * 11 * 0.5),
                 int(7 * 11 * 0.75),
-                int(7 * 11 * 1.0)
+                int(7 * 11 * 1.0),
             ],
         ),
         (
             "training_dataset_sizes",
             [
-                100_000,
+                1_000_000,
             ],
         ),
     ],
@@ -88,13 +88,13 @@ DOMAIN_VARS_ZELDA = {
                 int(7 * 11 * 0.25),
                 int(7 * 11 * 0.5),
                 int(7 * 11 * 0.75),
-                int(7 * 11 * 1.0)
+                int(7 * 11 * 1.0),
             ],
         ),
         (
             "training_dataset_sizes",
             [
-                100_000,
+                1_000_000,
             ],
         ),
     ],
