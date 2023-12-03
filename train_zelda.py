@@ -313,7 +313,7 @@ def train_zelda(combo_id, sweep_params, mode):
                 [X, signed_inputs],
                 y,
                 epochs=500,
-                steps_per_epoch=8192,
+                steps_per_epoch=32768,
                 verbose=2,
                 # callbacks=[counting_mcp_save, es],
                 callbacks=[counting_mcp_save],
