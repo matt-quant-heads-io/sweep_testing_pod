@@ -160,7 +160,6 @@ def train_zelda(combo_id, sweep_params, mode):
             )
 
     elif mode == "controllable":
-        breakpoint()
         for model_num in models_to_train:
             dfs = []
             X = []

@@ -22,16 +22,27 @@ Finally, cd into the cloned sweep_testing_pod repo.
    conda activate sweep_test # Activate conda environment
    pip install -r requirements.txt # Install the requirements
 ```
-## Test run (to fix identify the following error msg):
 
-Run the main.py script with:
+# Usage
 
+
+
+
+To generate training data (with a diffusion-like process that adds noise to a small dataset of target levels), run
 ```
-  sh run_sweep.sh
+python main.py process=gen_train_data
 ```
 
+To train, set `process=train`
 
-# Running
+Running `main.py` will launch a sweep of experiments, either locally and sequentially, or by sending jobs to a SLURM cluster with `submitit`
+
+Hyperparameter sweeps are given in `constants.py`.
+
+
+
 ## Data generation, training, and inference for Zelda (uncomment the mode you want to run in)
+You can also run the main.py script with:
 
 ```sh run_sweep.sh```
+
