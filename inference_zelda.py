@@ -328,7 +328,6 @@ def infer(
 
     env = make_vec_envs(env_name, representation, None, 1, **kwargs)
     obs = env.reset()
-    obs = env.reset()
     dones = False
     action_mode = "greedy"
     prob = ZeldaProblem()
@@ -578,7 +577,6 @@ def infer(
 
                 dones = False
                 obs = env.reset()
-                obs = env.reset()
 
     elif mode == "non_controllable":
         results_dict = {
@@ -659,7 +657,6 @@ def infer(
                     pass
 
             dones = False
-            obs = env.reset()
             obs = env.reset()
 
         results_df = pd.DataFrame(results_dict).to_csv(
