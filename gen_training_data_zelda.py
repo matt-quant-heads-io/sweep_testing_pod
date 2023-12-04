@@ -405,8 +405,12 @@ def generate_training_data_zelda(sweep_params, mode):
 
             old_map = new_map
 
-            col_idx = random.randint(0, len(random_target_map[0]) - 1)
-            row_idx = random.randint(0, len(random_target_map) - 1)
+            col_idx += 1
+            if col_idx >= 11:
+                col_idx = 0
+                row_idx += 1
+                if row_idx >= 7:
+                    row_idx = 0
 
             hamm = compute_hamm_dist(random_target_map, old_map)
             if hamm == 0.0:
