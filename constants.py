@@ -74,7 +74,7 @@ DOMAIN_VARS_ZELDA = {
         (
             "training_dataset_sizes",
             [
-                1_000_000,
+                500_000,
             ],
         ),
     ],
@@ -94,7 +94,7 @@ DOMAIN_VARS_ZELDA = {
         (
             "training_dataset_sizes",
             [
-                1_000_000,
+                500_000,
             ],
         ),
     ],

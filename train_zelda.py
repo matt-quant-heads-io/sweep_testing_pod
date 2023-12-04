@@ -20,6 +20,8 @@ def get_paths_to_training_data(
         training_length_suffixes = ["1000000"]
     elif training_dataset_size == 100_000:
         training_length_suffixes = ["100000"]
+    elif training_dataset_size == 500_000:
+        training_length_suffixes = ["500000"]
 
     trajectories_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/trajectories"
     trajectory_filepaths_to_load = [
@@ -313,7 +315,7 @@ def train_zelda(combo_id, sweep_params, mode):
                 [X, signed_inputs],
                 y,
                 epochs=500,
-                steps_per_epoch=32768,
+                steps_per_epoch=4096,
                 verbose=2,
                 # callbacks=[counting_mcp_save, es],
                 callbacks=[counting_mcp_save],
@@ -324,3 +326,6 @@ def train_zelda(combo_id, sweep_params, mode):
                 f"{models_to_skip_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.csv",
                 index=False,
             )
+
+
+# train_zelda("", (5, 50, 77, 100000), "controllable")
