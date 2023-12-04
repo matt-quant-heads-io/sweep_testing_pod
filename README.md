@@ -26,19 +26,22 @@ Finally, cd into the cloned sweep_testing_pod repo.
 # Usage
 
 
+First, set a bunch of environment variables:
+```
+export PROJECT_ROOT='./'; export ZELDA_DATA_ROOT={$PROJECT_ROOT}/data/zelda; export ZELDA_GOAL_MAPS_ROOT={$PROJECT_ROOT}/goal_maps/zelda                                              ```
+```
 
 
 To generate training data (with a diffusion-like process that adds noise to a small dataset of target levels), run
 ```
-python main.py process=gen_train_data
+python main.py experiments=exp_1 mode=controllable domain=zelda process=gen_train_data slurm=False
 ```
 
 To train, set `process=train`
 
-Running `main.py` will launch a sweep of experiments, either locally and sequentially, or by sending jobs to a SLURM cluster with `submitit`
+Running `main.py` will launch a sweep of experiments, either locally and sequentially, or by sending jobs to a SLURM cluster with `submitit`. To launch them locally, set `slurm=False`, to launch on SLURM, set `slurm=True`.
 
 Hyperparameter sweeps are given in `constants.py`.
-
 
 
 ## Data generation, training, and inference for Zelda (uncomment the mode you want to run in)

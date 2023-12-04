@@ -263,6 +263,9 @@ def run(cfg: DictConfig):
                     run_inference, inference_chunk, domains, cfg.username
                 )
                 jobs.append(job)
+    
+    else:
+        raise Exception(f"Invalid process type {cfg.process}")
 
 
 if __name__ == "__main__":
