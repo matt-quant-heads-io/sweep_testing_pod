@@ -170,13 +170,13 @@ def run(cfg: DictConfig):
         if cfg.slurm:
 
             executor.update_parameters(
-                slurm_array_parallelism=2,
+                # slurm_array_parallelism=2,
                 #gpus_per_node=1,
                 tasks_per_node=1,
                 cpus_per_task=4,
                 mem_gb=50,
                 timeout_min=1440,
-                nodes=4
+                # nodes=4
             )
 
             jobs = []
@@ -191,7 +191,7 @@ def run(cfg: DictConfig):
     elif cfg.process == "train":
         init_logger("train")
         executor.update_parameters(
-            slurm_array_parallelism=1,
+            # slurm_array_parallelism=1,
             # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,

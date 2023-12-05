@@ -293,6 +293,17 @@ def train_zelda(combo_id, sweep_params, mode):
             #     start_from_epoch=10,
             # )
 
+            es = EarlyStopping(
+                monitor="cnn_cond_counting_model_acc",
+                min_delta=0.0001,
+                patience=50,
+                verbose=0,
+                mode="max",
+                baseline=0.99,
+                restore_best_weights=False,
+                start_from_epoch=0,
+            )
+
             counting_mcp_save = ModelCheckpoint(
                 model_abs_path,
                 save_best_only=True,
@@ -316,8 +327,7 @@ def train_zelda(combo_id, sweep_params, mode):
                 epochs=500,
                 steps_per_epoch=4096,
                 verbose=2,
-                # callbacks=[counting_mcp_save, es],
-                callbacks=[counting_mcp_save],
+                callbacks=[counting_mcp_save, es],
             )
 
             df_history = pd.DataFrame(counting_history.history)
