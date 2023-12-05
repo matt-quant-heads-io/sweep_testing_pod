@@ -59,7 +59,6 @@ def train_zelda(combo_id, sweep_params, mode):
             dfs = []
             X = []
             y = []
-            breakpoint()
 
             training_data_files_locs = get_paths_to_training_data(
                 mode, goal_set_size, trajectory_length, training_dataset_size
@@ -179,7 +178,6 @@ def train_zelda(combo_id, sweep_params, mode):
             except:
                 return
 
-            breakpoint()
             df = pd.concat(dfs)
 
             df = df.sample(frac=1).reset_index(drop=True)
@@ -207,7 +205,6 @@ def train_zelda(combo_id, sweep_params, mode):
             df.drop("nearest_enemy_signed", axis=1, inplace=True)
             df.drop("path_length_signed", axis=1, inplace=True)
 
-            breakpoint()
 
             for idx in range(len(df)):
                 x = (
@@ -258,7 +255,6 @@ def train_zelda(combo_id, sweep_params, mode):
                 Dense(8, activation="softmax")(x),
             ]
 
-            breakpoint()
 
             conditional_counting_cnn_model = Model(
                 inputs=inputs, outputs=final_output, name="cnn_cond_counting_model"
@@ -314,7 +310,6 @@ def train_zelda(combo_id, sweep_params, mode):
             #     start_from_epoch=10,
             # )
 
-            breakpoint()
             counting_history = conditional_counting_cnn_model.fit(
                 [X, signed_inputs],
                 y,
@@ -324,7 +319,6 @@ def train_zelda(combo_id, sweep_params, mode):
                 # callbacks=[counting_mcp_save, es],
                 callbacks=[counting_mcp_save],
             )
-            breakpoint()
 
             df_history = pd.DataFrame(counting_history.history)
             df_history.to_csv(
