@@ -168,3 +168,5 @@ scratch.py
 *_submission.sh
 *_submitted.pkl
 *.out
+
+logs/*

@@ -39,7 +39,9 @@ python main.py experiments=exp_1 mode=controllable domain=zelda process=gen_trai
 
 To train, set `process=train`
 
-Running `main.py` will launch a sweep of experiments, either locally and sequentially, or by sending jobs to a SLURM cluster with `submitit`. To launch them locally, set `slurm=False`, to launch on SLURM, set `slurm=True`.
+Running `main.py` will launch a sweep of experiments, either locally and sequentially, or by sending jobs to a SLURM cluster with `submitit`. To launch them locally, set `slurm=False`.
+
+To launch on SLURM, set `slurm=True`, and set `+username={$USER}`
 
 Hyperparameter sweeps are given in `constants.py`.
 

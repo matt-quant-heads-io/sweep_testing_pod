@@ -230,7 +230,7 @@ def run(cfg: DictConfig):
 
     elif cfg.process == "inference":
         executor.update_parameters(
-            slurm_array_parallelism=2,
+            # slurm_array_parallelism=2,
             # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,
