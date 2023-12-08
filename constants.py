@@ -8,6 +8,7 @@ PROJECT_ROOT = os.environ["PROJECT_ROOT"]
 # ###################   ZELDA CONSTANTS   ##############################
 
 ZELDA_DATA_ROOT = os.environ["ZELDA_DATA_ROOT"]
+ZELDA_DATA_SAVE_ROOT = os.environ["ZELDA_DATA_SAVE_ROOT"]
 ZELDA_GOAL_MAPS_ROOT = os.environ["ZELDA_GOAL_MAPS_ROOT"]
 DOMAIN_VARS_ZELDA = {
     "tiles_map": {
@@ -58,7 +59,7 @@ DOMAIN_VARS_ZELDA = {
     "gym_env_name": "zelda-narrow-v0",
     "prob": ZeldaProblem,
     "sweep_params": [
-        # ("obs_sizes", [5, 21, 9, 19]),
+        ("obs_sizes", [5, 21, 9, 19]),
         ("goal_set_sizes", [1, 10, 20, 30, 40, 50]),
         (
             "trajectory_lengths",

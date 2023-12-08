@@ -30,7 +30,7 @@ def get_paths_to_training_data(
 def train_zelda(combo_id, sweep_params, mode):
     # logger.info(f"Calling train_zelda with params {sweep_params}")
     print(f"Calling train_zelda with params {sweep_params}")
-    models_to_skip_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/models_to_skip"
+    models_to_skip_dir = f"{constants.ZELDA_DATA_SAVE_ROOT}/{mode}/models_to_skip"
     if not os.path.exists(models_to_skip_dir):
         os.makedirs(models_to_skip_dir)
 
@@ -50,7 +50,7 @@ def train_zelda(combo_id, sweep_params, mode):
     # if not os.path.exists(combo_id_dir):
     #     os.makedirs(combo_id_dir)
 
-    models_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/models"
+    models_dir = f"{constants.ZELDA_DATA_SAVE_ROOT}/{mode}/models"
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)
 
@@ -325,7 +325,9 @@ def train_zelda(combo_id, sweep_params, mode):
                 [X, signed_inputs],
                 y,
                 epochs=500,
+                # epochs=1,
                 steps_per_epoch=16_384,
+                # steps_per_epoch=16,
                 verbose=2,
                 callbacks=[counting_mcp_save, es],
             )

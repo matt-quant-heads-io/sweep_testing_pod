@@ -197,7 +197,7 @@ def run(cfg: DictConfig):
             cpus_per_task=1,
             mem_gb=50,
             timeout_min=1440,
-            nodes=1,
+            # nodes=1,
         )
 
         print("Running process 'train'")
@@ -234,7 +234,7 @@ def run(cfg: DictConfig):
             # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,
-            mem_gb=50,
+            mem_gb=100,
             timeout_min=1440,
             nodes=1,
         )

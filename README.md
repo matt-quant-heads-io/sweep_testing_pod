@@ -28,7 +28,8 @@ Finally, cd into the cloned sweep_testing_pod repo.
 
 First, set a bunch of environment variables:
 ```
-export PROJECT_ROOT='./'; export ZELDA_DATA_ROOT={$PROJECT_ROOT}/data/zelda; export ZELDA_GOAL_MAPS_ROOT={$PROJECT_ROOT}/goal_maps/zelda                                              ```
+export PROJECT_ROOT='./'; export ZELDA_DATA_ROOT={$PROJECT_ROOT}/data/zelda; 
+export ZELDA_DATA_SAVE_ROOT={$PROJECT_ROOT}/data/zelda; export ZELDA_GOAL_MAPS_ROOT={$PROJECT_ROOT}/goal_maps/zelda                                              ```
 ```
 
 
