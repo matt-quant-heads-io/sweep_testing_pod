@@ -149,16 +149,6 @@ def run(cfg: DictConfig):
     if cfg.process == "gen_train_data":
         init_logger("gen_train_data")
 
-        executor.update_parameters(
-            slurm_array_parallelism=2,
-            # gpus_per_node=1,
-            tasks_per_node=1,
-            cpus_per_task=1,
-            mem_gb=50,
-            timeout_min=1440,
-            nodes=1,
-        )
-
         print("Running process 'gen_train_data'")
         # Gen training data
         obs_sz, goal_sz, traj_len, td_sz = [
@@ -177,21 +167,37 @@ def run(cfg: DictConfig):
             sum_runs += len(traj_chunk)
         # print(f"sum_runs: {sum_runs}")
 
-        jobs = []
-        with executor.batch():
+        if cfg.slurm:
+
+            executor.update_parameters(
+                # slurm_array_parallelism=2,
+                #gpus_per_node=1,
+                tasks_per_node=1,
+                cpus_per_task=4,
+                mem_gb=50,
+                timeout_min=1440,
+                # nodes=4
+            )
+
+            jobs = []
+            with executor.batch():
+                for traj_chunk in traj_chunks:
+                    job = executor.submit(run_gen_data, traj_chunk, domains)
+                    jobs.append(job)
+        else:
             for traj_chunk in traj_chunks:
-                job = executor.submit(run_gen_data, traj_chunk, domains)
-                jobs.append(job)
+                run_gen_data(traj_chunk, domains)
+
     elif cfg.process == "train":
         init_logger("train")
         executor.update_parameters(
-            slurm_array_parallelism=1,
+            # slurm_array_parallelism=1,
             # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,
             mem_gb=50,
             timeout_min=1440,
-            nodes=1,
+            # nodes=1,
         )
 
         print("Running process 'train'")
@@ -212,18 +218,23 @@ def run(cfg: DictConfig):
         print(f"sum_runs: {sum_runs}")
 
         jobs = []
-        with executor.batch():
+
+        if cfg.slurm:
+            with executor.batch():
+                for train_chunk in train_chunks:
+                    job = executor.submit(run_train, train_chunk, domains)
+                    jobs.append(job)
+        else:
             for train_chunk in train_chunks:
-                job = executor.submit(run_train, train_chunk, domains)
-                jobs.append(job)
+                run_train(train_chunk, domains)
 
     elif cfg.process == "inference":
         executor.update_parameters(
-            slurm_array_parallelism=2,
+            # slurm_array_parallelism=2,
             # gpus_per_node=1,
             tasks_per_node=1,
             cpus_per_task=1,
-            mem_gb=50,
+            mem_gb=100,
             timeout_min=1440,
             nodes=1,
         )
@@ -252,6 +263,9 @@ def run(cfg: DictConfig):
                     run_inference, inference_chunk, domains, cfg.username
                 )
                 jobs.append(job)
+    
+    else:
+        raise Exception(f"Invalid process type {cfg.process}")
 
 
 if __name__ == "__main__":

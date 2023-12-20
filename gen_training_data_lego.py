@@ -441,7 +441,6 @@ def generate_training_data_lego(domain, mode, username):
         curr_step = 0
         episode_len = ep_len
         env.reset()
-        env.reset()
         while hamm > 0.0 and curr_step <= episode_len and total_steps < 1_000_000:
             curr_step += 1
             total_steps += 1
