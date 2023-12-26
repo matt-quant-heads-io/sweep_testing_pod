@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ${PWD}/env_local.sh
+source ${PWD}/env.sh
 conda activate sweep_testing_pod
 
 cd ${PROJECT_ROOT}
