@@ -58,45 +58,67 @@ DOMAIN_VARS_ZELDA = {
     "gym_env_name": "zelda-narrow-v0",
     "prob": ZeldaProblem,
     "sweep_params": [
-        ("obs_sizes", [5, 3, 9, 7, 1, 11, 13, 15, 17, 19, 21]),
-        # ("obs_sizes", [5]),
-        ("goal_set_sizes", [1, 10, 20, 30, 40, 50]),
+        ("obs_sizes", [21]),
+        ("goal_set_sizes", [10]),
         (
             "trajectory_lengths",
-            [
-                int(7 * 11 * 0.05),
-                int(7 * 11 * 0.25),
-                int(7 * 11 * 0.5),
-                int(7 * 11 * 0.75),
-                int(7 * 11 * 1.0),
-            ],
+            [int(7 * 11 * 0.5)],
         ),
         (
             "training_dataset_sizes",
             [
-                500_000,
+                100_000,
             ],
         ),
+        # ("obs_sizes", [17, 3, 7]),
+        # ("goal_set_sizes", [1, 10, 20, 30, 40, 50]),
+        # (
+        #     "trajectory_lengths",
+        #     [
+        #         int(7 * 11 * 0.05),
+        #         int(7 * 11 * 0.25),
+        #         int(7 * 11 * 0.5),
+        #         int(7 * 11 * 0.75),
+        #         int(7 * 11 * 1.0),
+        #     ],
+        # ),
+        # (
+        #     "training_dataset_sizes",
+        #     [
+        #         500_000,
+        #     ],
+        # ),
     ],
     "trajectories_to_generate": [
         ("obs_sizes", [21]),
-        ("goal_set_sizes", [1, 10, 20, 30, 40, 50]),
+        ("goal_set_sizes", [10]),
         (
             "trajectory_lengths",
-            [
-                int(7 * 11 * 0.05),
-                int(7 * 11 * 0.25),
-                int(7 * 11 * 0.5),
-                int(7 * 11 * 0.75),
-                int(7 * 11 * 1.0),
-            ],
+            [int(7 * 11 * 0.5)],
         ),
         (
             "training_dataset_sizes",
             [
-                500_000,
+                100_000,
             ],
         ),
+        # ("goal_set_sizes", [1, 10, 20, 30, 40, 50]),
+        # (
+        #     "trajectory_lengths",
+        #     [
+        #         int(7 * 11 * 0.05),
+        #         int(7 * 11 * 0.25),
+        #         int(7 * 11 * 0.5),
+        #         int(7 * 11 * 0.75),
+        #         int(7 * 11 * 1.0),
+        #     ],
+        # ),
+        # (
+        #     "training_dataset_sizes",
+        #     [
+        #         500_000,
+        #     ],
+        # ),
     ],
 }
 TILES_MAP_ZELDA = DOMAIN_VARS_ZELDA["tiles_map"]

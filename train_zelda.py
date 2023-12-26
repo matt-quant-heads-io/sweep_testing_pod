@@ -220,22 +220,18 @@ def train_zelda(combo_id, sweep_params, mode):
                 )
                 X.append(x)
 
-            # for idx in range(len(df)):
-            #     x = (
-            #         df.iloc[
-            #             idx,
-            #             :,
-            #         ]
-            #         .values.astype("int")
-            #         .reshape((obs_size, obs_size, 8))
-            #     )
-            #     X.append(x)
-
             X = np.array(X)
 
             model_abs_path = f"{models_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_num}.h5"
             inputs = [
-                Input(shape=(obs_size, obs_size, 8), name="obs"),
+                Input(
+                    shape=(
+                        obs_size,
+                        obs_size,
+                        8,
+                    ),
+                    name="obs",
+                ),
                 Input(shape=(signed_inputs.shape[1],), name="signed_inputs"),
             ]
 
@@ -277,12 +273,12 @@ def train_zelda(combo_id, sweep_params, mode):
             )
 
             # Cat Acc
-            # counting_mcp_save = ModelCheckpoint(
-            #     model_abs_path,
-            #     save_best_only=True,
-            #     monitor="cnn_cond_counting_model_acc",
-            #     mode="max",
-            # )
+            counting_mcp_save = ModelCheckpoint(
+                model_abs_path,
+                save_best_only=True,
+                monitor="cnn_cond_counting_model_acc",
+                mode="max",
+            )
             # es = EarlyStopping(
             #     monitor="cnn_cond_counting_model_acc",
             #     min_delta=0.00001,
@@ -291,23 +287,6 @@ def train_zelda(combo_id, sweep_params, mode):
             #     mode="max",
             #     baseline=0.9999,
             #     restore_best_weights=False,
-            #     start_from_epoch=10,
-            # )
-
-            counting_mcp_save = ModelCheckpoint(
-                model_abs_path,
-                save_best_only=True,
-                monitor="cnn_cond_counting_model_acc",
-                mode="max",
-            )
-            # es = EarlyStopping(
-            #     monitor="cnn_cond_counting_model_loss",
-            #     min_delta=0.00001,
-            #     patience=1000,
-            #     verbose=0,
-            #     mode="min",
-            #     baseline=0.9999,
-            #     restore_best_weights=True,
             #     start_from_epoch=10,
             # )
 
@@ -328,4 +307,42 @@ def train_zelda(combo_id, sweep_params, mode):
             )
 
 
-# train_zelda("", (5, 50, 77, 100000), "controllable")
+# train_zelda("", (5, 1, 38, 100000), "controllable")
+
+
+# training_data_files_locs = get_paths_to_training_data("controllable", 10, 38, 100000)
+
+# dfs = []
+# try:
+#     for abs_filepath in training_data_files_locs:
+#         print(f"Loading df {abs_filepath}")
+#         df = pd.read_csv(abs_filepath)
+#         dfs.append(df)
+# except:
+#     pass
+
+# df = pd.concat(dfs)
+
+# df = df.sample(frac=1).reset_index(drop=True)
+# y_true = df[["target"]]
+# y = np_utils.to_categorical(y_true)
+# print(f"y shape: {y.shape}")
+# df.drop("target", axis=1, inplace=True)
+# y = y.astype("int")
+
+# num_enemies_signed = np_utils.to_categorical(df[["num_enemies_signed"]] - 1)
+# print(f"num_enemies_signed shape: {num_enemies_signed.shape}")
+# nearest_enemy_signed = np_utils.to_categorical(df[["nearest_enemy_signed"]] - 1)
+# print(f"nearest_enemy_signed shape: {nearest_enemy_signed.shape}")
+# path_length_signed = np_utils.to_categorical(df[["path_length_signed"]] - 1)
+# print(f"path_length_signed shape: {path_length_signed.shape}")
+
+# signed_inputs = np.column_stack(
+#     (num_enemies_signed, nearest_enemy_signed, path_length_signed)
+# )
+# print(f"signed_inputs shape: {signed_inputs.shape}")
+
+# df.drop("num_regions_signed", axis=1, inplace=True)
+# df.drop("num_enemies_signed", axis=1, inplace=True)
+# df.drop("nearest_enemy_signed", axis=1, inplace=True)
+# df.drop("path_length_signed", axis=1, inplace=True)
