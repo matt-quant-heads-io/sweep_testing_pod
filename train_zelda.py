@@ -82,9 +82,8 @@ def train_zelda(combo_id, sweep_params, mode):
             df = df.sample(frac=1).reset_index(drop=True)
             y_true = df[["target"]]
             y = np_utils.to_categorical(y_true)
-            print(f"y: {y}")
             df.drop("target", axis=1, inplace=True)
-            y = y.astype("int32")
+            y = y.astype("int")
 
             for idx in range(len(df)):
                 x = (
@@ -127,7 +126,7 @@ def train_zelda(combo_id, sweep_params, mode):
 
             model.compile(
                 loss="categorical_crossentropy",
-                optimizer="rmsprop",
+                optimizer="SGD",
                 metrics=[
                     tf.keras.metrics.CategoricalAccuracy(name="categorical_accuracy")
                 ],
@@ -138,23 +137,23 @@ def train_zelda(combo_id, sweep_params, mode):
                 monitor="categorical_accuracy",
                 mode="max",
             )
-            es = EarlyStopping(
-                monitor="categorical_accuracy",
-                min_delta=0.00001,
-                patience=250,
-                verbose=0,
-                mode="max",
-                baseline=0.9999,
-                restore_best_weights=True,
-                start_from_epoch=10,
-            )
+            # es = EarlyStopping(
+            #     monitor="categorical_accuracy",
+            #     min_delta=0.00001,
+            #     patience=250,
+            #     verbose=0,
+            #     mode="max",
+            #     baseline=0.9999,
+            #     restore_best_weights=True,
+            #     start_from_epoch=10,
+            # )
             history = model.fit(
                 X,
                 y,
                 epochs=500,
-                steps_per_epoch=1024,
+                steps_per_epoch=4096,
                 verbose=2,
-                callbacks=[mcp_save, es],
+                callbacks=[mcp_save],
             )
 
             df_history = pd.DataFrame(history.history)
