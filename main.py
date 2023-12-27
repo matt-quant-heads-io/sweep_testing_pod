@@ -90,13 +90,12 @@ def main(combo_ids, sweep_params, domain, mode):
             print(f"Joined worker process {wi + 1}")
 
 
-def run_gen_data(traj_chunk, domains):
+def run_gen_data(traj_chunk, domains, mode):
     # logger.info(f"Calling run_gen_data with traj chunks from {traj_chunk[0]} to {traj_chunk[len(traj_chunk)-1]}")
     print(
         f"Calling run_gen_data with traj chunks from {traj_chunk[0]} to {traj_chunk[len(traj_chunk)-1]}"
     )
     gen_data_func, train_func, infer_func = RUN_PLAYBOOK[domains[0]]
-    mode = "controllable"
 
     for traj_param_combo in traj_chunk:
         start = timer()
@@ -109,13 +108,12 @@ def run_gen_data(traj_chunk, domains):
         )
 
 
-def run_train(train_chunk, domains):
+def run_train(train_chunk, domains, mode):
     # logger.info(f"Calling run_train with train chunks from {train_chunk[0]} to {train_chunk[len(train_chunk)-1]}")
     print(
         f"Calling run_train with train chunks from {train_chunk[0]} to {train_chunk[len(train_chunk)-1]}"
     )
     # Traing models
-    mode = "controllable"
     gen_data_func, train_func, infer_func = RUN_PLAYBOOK[domains[0]]
     for combo_id, params_combo in enumerate(train_chunk):
         start = timer()
@@ -127,9 +125,8 @@ def run_train(train_chunk, domains):
         )
 
 
-def run_inference(infer_chunk, domains, username):
+def run_inference(infer_chunk, domains, username, mode):
     gen_data_func, train_func, infer_func = RUN_PLAYBOOK[domains[0]]
-    mode = "controllable"
 
     for infer_param_combo in infer_chunk:
         start = timer()
@@ -180,7 +177,7 @@ def run(cfg: DictConfig):
         jobs = []
         with executor.batch():
             for traj_chunk in traj_chunks:
-                job = executor.submit(run_gen_data, traj_chunk, domains)
+                job = executor.submit(run_gen_data, traj_chunk, domains, cfg.mode)
                 jobs.append(job)
     elif cfg.process == "train":
         init_logger("train")
@@ -214,7 +211,7 @@ def run(cfg: DictConfig):
         jobs = []
         with executor.batch():
             for train_chunk in train_chunks:
-                job = executor.submit(run_train, train_chunk, domains)
+                job = executor.submit(run_train, train_chunk, domains, cfg.mode)
                 jobs.append(job)
 
     elif cfg.process == "inference":
@@ -249,7 +246,7 @@ def run(cfg: DictConfig):
         with executor.batch():
             for inference_chunk in inference_chunks:
                 job = executor.submit(
-                    run_inference, inference_chunk, domains, cfg.username
+                    run_inference, inference_chunk, domains, cfg.username, cfg.mode
                 )
                 jobs.append(job)
 

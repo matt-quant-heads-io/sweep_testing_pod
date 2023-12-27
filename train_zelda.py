@@ -178,7 +178,8 @@ def train_zelda(combo_id, sweep_params, mode):
                     print(f"Loading df {abs_filepath}")
                     df = pd.read_csv(abs_filepath)
                     dfs.append(df)
-            except:
+            except Exception as e:
+                print(e)
                 return
 
             df = pd.concat(dfs)
@@ -307,7 +308,7 @@ def train_zelda(combo_id, sweep_params, mode):
             )
 
 
-# train_zelda("", (5, 1, 38, 100000), "controllable")
+# train_zelda("", (5, 10, 77, 1000000), "controllable")
 
 
 # training_data_files_locs = get_paths_to_training_data("controllable", 10, 38, 100000)
