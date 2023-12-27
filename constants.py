@@ -58,7 +58,7 @@ DOMAIN_VARS_ZELDA = {
     "gym_env_name": "zelda-narrow-v0",
     "prob": ZeldaProblem,
     "sweep_params": [
-        ("obs_sizes", [21]),
+        ("obs_sizes", [5]),
         ("goal_set_sizes", [10]),
         (
             "trajectory_lengths",
@@ -90,7 +90,7 @@ DOMAIN_VARS_ZELDA = {
         # ),
     ],
     "trajectories_to_generate": [
-        ("obs_sizes", [21]),
+        ("obs_sizes", [5]),
         ("goal_set_sizes", [10]),
         (
             "trajectory_lengths",
