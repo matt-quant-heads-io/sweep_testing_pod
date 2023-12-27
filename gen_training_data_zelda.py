@@ -41,8 +41,12 @@ def generate_training_data_zelda(sweep_params, mode):
 
     print(f"sweep_params: {sweep_params}")
     (obs_size, goal_set_size, trajectory_length, training_dataset_size) = sweep_params
-    trajectory_skip_filename = f"goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}.done"
-    trajectory_skip_filename_alt = f"goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}.csv"
+    trajectory_skip_filename = (
+        f"obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}.done"
+    )
+    trajectory_skip_filename_alt = (
+        f"obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}.csv"
+    )
     if os.path.exists(
         f"{trajectories_to_skip_dir}/{trajectory_skip_filename}"
     ) or os.path.exists(f"{trajectories_to_skip_dir}/{trajectory_skip_filename_alt}"):
@@ -434,7 +438,7 @@ def generate_training_data_zelda(sweep_params, mode):
     if not os.path.exists(trajectories_dir):
         os.makedirs(trajectories_dir)
 
-    path_to_trajectory = f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}.csv"
+    path_to_trajectory = f"{trajectories_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}.csv"
 
     goal_maps_set = [i for i in range(len(os.listdir(constants.ZELDA_GOAL_MAPS_ROOT)))]
     random.shuffle(goal_maps_set)

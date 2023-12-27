@@ -12,9 +12,7 @@ import numpy as np
 import constants
 
 
-def get_paths_to_training_data(
-    mode, goal_set_size, trajectory_length, training_dataset_size
-):
+def get_paths_to_training_data(mode, goal_set_size, trajectory_length, obs_size):
     print(f"training_dataset_size: {training_dataset_size}")
     if training_dataset_size == 1_000_000:
         training_length_suffixes = ["1000000"]
@@ -25,8 +23,7 @@ def get_paths_to_training_data(
 
     trajectories_dir = f"{constants.ZELDA_DATA_ROOT}/{mode}/trajectories"
     trajectory_filepaths_to_load = [
-        f"{trajectories_dir}/goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}.csv"
-        for training_dataset_size in training_length_suffixes
+        f"{trajectories_dir}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}.csv"
     ]
 
     return trajectory_filepaths_to_load
@@ -66,13 +63,13 @@ def train_zelda(combo_id, sweep_params, mode):
             y = []
 
             training_data_files_locs = get_paths_to_training_data(
-                mode, goal_set_size, trajectory_length, training_dataset_size
+                mode, goal_set_size, trajectory_length, obs_size
             )
 
             try:
                 for abs_filepath in training_data_files_locs:
                     print(f"Loading df {abs_filepath}")
-                    df = pd.read_csv(abs_filepath)
+                    df = pd.read_csv(abs_filepath)[:training_dataset_size]
                     dfs.append(df)
             except:
                 return
@@ -85,12 +82,23 @@ def train_zelda(combo_id, sweep_params, mode):
             df.drop("target", axis=1, inplace=True)
             y = y.astype("int")
 
+            # for idx in range(len(df)):
+            #     x = (
+            #         df.iloc[
+            #             idx,
+            #             (21 - obs_size)
+            #             * 8 : (((21 - obs_size) * 8) + (8 * obs_size**2)),
+            #         ]
+            #         .values.astype("int")
+            #         .reshape((obs_size, obs_size, 8))
+            #     )
+            #     X.append(x)
+
             for idx in range(len(df)):
                 x = (
                     df.iloc[
                         idx,
-                        (21 - obs_size)
-                        * 8 : (((21 - obs_size) * 8) + (8 * obs_size**2)),
+                        : 8 * obs_size**2,
                     ]
                     .values.astype("int")
                     .reshape((obs_size, obs_size, 8))
@@ -169,13 +177,13 @@ def train_zelda(combo_id, sweep_params, mode):
             y = []
 
             training_data_files_locs = get_paths_to_training_data(
-                mode, goal_set_size, trajectory_length, training_dataset_size
+                mode, goal_set_size, trajectory_length, obs_size
             )
 
             try:
                 for abs_filepath in training_data_files_locs:
                     print(f"Loading df {abs_filepath}")
-                    df = pd.read_csv(abs_filepath)
+                    df = pd.read_csv(abs_filepath)[:training_dataset_size]
                     dfs.append(df)
             except Exception as e:
                 print(e)
@@ -212,8 +220,7 @@ def train_zelda(combo_id, sweep_params, mode):
                 x = (
                     df.iloc[
                         idx,
-                        (21 - obs_size)
-                        * 8 : (((21 - obs_size) * 8) + (8 * obs_size**2)),
+                        :,
                     ]
                     .values.astype("int")
                     .reshape((obs_size, obs_size, 8))
@@ -307,7 +314,7 @@ def train_zelda(combo_id, sweep_params, mode):
             )
 
 
-# train_zelda("", (5, 10, 77, 1000000), "controllable")
+# train_zelda("", (5, 50, 77, 100000), "non_controllable")
 
 
 # training_data_files_locs = get_paths_to_training_data("controllable", 10, 38, 100000)
