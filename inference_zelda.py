@@ -682,18 +682,14 @@ kwargs = {
 
 
 def inference_zelda(sweep_params, mode, username="ms12010"):
-    root_path = f'{os.environ["HOME"]}/sweep_testing_pod/data/zelda/{mode}'
+    root_path = f'{os.environ["SCRATCH"]}/overlay/sweep_testing_pod/data/zelda/{mode}'
     obs_size, goal_set_size, trajectory_length, training_dataset_size = sweep_params
 
     results_path = f"{root_path}/results"
     if not os.path.exists(results_path):
         os.makedirs(results_path)
 
-    # for sample_id in range(1, 4):
-    #     sample_id_path = f"{combo_id_path}/sampleID_{sample_id}"
-    #     model_count = sample_id
-
-    for model_count in range(1, 2):
+    for model_count in range(1, 4):
         inference_results_path = f"{results_path}/obssz_{obs_size}_goalsz_{goal_set_size}_trajlen_{trajectory_length}_tdsz_{training_dataset_size}_{model_count}_results.csv"
         if os.path.exists(inference_results_path):
             print(f"Found/skipping inference results path {inference_results_path}")

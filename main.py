@@ -225,7 +225,7 @@ def run(cfg: DictConfig):
             nodes=1,
         )
 
-        print("Running process 'train'")
+        print("Running process 'inference'")
         # Gen training data
         obs_sz, goal_sz, traj_len, td_sz = [
             param_vals_list[1]
